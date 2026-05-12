@@ -1,12 +1,141 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>nginx-config-visualizer</title>
+    <title>NGINX Intelligence</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              secondary: "#bec6e0",
+              surface: "#13131b",
+              "tertiary-container": "#d97721",
+              "on-secondary-container": "#adb4ce",
+              tertiary: "#ffb783",
+              "on-secondary": "#283044",
+              "accent-error": "#f43f5e",
+              "on-secondary-fixed-variant": "#3f465c",
+              primary: "#c0c1ff",
+              "accent-active": "#10b981",
+              "on-background": "#e4e1ed",
+              "surface-bright": "#393841",
+              "surface-variant": "#34343d",
+              "on-surface-variant": "#c7c4d7",
+              "secondary-fixed-dim": "#bec6e0",
+              "surface-container-lowest": "#0d0d15",
+              "surface-container-low": "#1b1b23",
+              "inverse-on-surface": "#303038",
+              "on-error": "#690005",
+              "primary-container": "#8083ff",
+              "on-tertiary-fixed-variant": "#703700",
+              "surface-container": "#1f1f27",
+              "tertiary-fixed": "#ffdcc5",
+              error: "#ffb4ab",
+              "inverse-primary": "#494bd6",
+              "on-tertiary-container": "#452000",
+              "on-tertiary": "#4f2500",
+              outline: "#908fa0",
+              "on-error-container": "#ffdad6",
+              "secondary-fixed": "#dae2fd",
+              "on-primary-fixed": "#07006c",
+              "on-surface": "#e4e1ed",
+              "primary-fixed": "#e1e0ff",
+              background: "#13131b",
+              "tertiary-fixed-dim": "#ffb783",
+              "surface-tint": "#c0c1ff",
+              "inverse-surface": "#e4e1ed",
+              "background-base": "#020617",
+              "surface-panel": "#0f172a",
+              "on-tertiary-fixed": "#301400",
+              "on-primary-fixed-variant": "#2f2ebe",
+              "primary-fixed-dim": "#c0c1ff",
+              "error-container": "#93000a",
+              "surface-border": "#1e293b",
+              "glass-fill": "rgba(255, 255, 255, 0.05)",
+              "surface-dim": "#13131b",
+              "surface-container-highest": "#34343d",
+              "on-secondary-fixed": "#131b2e",
+              "surface-container-high": "#292932",
+              "on-primary": "#1000a9",
+              "secondary-container": "#3f465c",
+              "outline-variant": "#464554",
+              "on-primary-container": "#0d0096"
+            },
+            spacing: {
+              "panel-gap": "1.5rem",
+              gutter: "1rem",
+              "container-padding-mobile": "1.5rem",
+              "container-padding-desktop": "2rem"
+            },
+            fontFamily: {
+              "headline-md": ["Geist"],
+              "headline-lg": ["Geist"],
+              "code-md": ["JetBrains Mono"],
+              "body-md": ["Geist"],
+              "label-caps": ["Geist"],
+              "body-sm": ["Geist"]
+            },
+            fontSize: {
+              "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+              "headline-lg": ["30px", { lineHeight: "38px", letterSpacing: "-0.02em", fontWeight: "600" }],
+              "code-md": ["14px", { lineHeight: "22px", fontWeight: "400" }],
+              "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+              "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+              "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }]
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px"
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #020617;
+        font-family: 'Geist', sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 10px;
+      }
+      .syntax-keyword { color: #c0c1ff; font-weight: 500; }
+      .syntax-variable { color: #ffb783; }
+      .syntax-string { color: #10b981; }
+      .syntax-comment { color: #908fa0; font-style: italic; }
+    </style>
   </head>
-  <body>
+  <body class="bg-surface text-on-surface overflow-hidden h-screen flex flex-col">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
