@@ -1,12 +1,12 @@
 # Nginx Config Visualizer - Implementation Checklist
 
 ## Milestone 1: Foundation & Layout
-- [ ] Create LandingPage component with "Create New" / "Import Existing" options
-- [ ] Create main App layout with Header (4 tabs) and Footer
-- [ ] Add reset button to header that clears state and returns to landing page
-- [ ] Set up protected routing (workspace requires config initialization)
-- [ ] Implement basic Zustand store with fileSystem and activeTab state
-- [ ] Create placeholder pages for all 4 tabs
+- [x] Create LandingPage component with "Create New" / "Import Existing" options
+- [x] Create main App layout with Header (4 tabs) and Footer
+- [x] Add reset button to header that clears state and returns to landing page
+- [x] Set up protected routing (workspace requires config initialization)
+- [x] Implement basic Zustand store with fileSystem and activeTab state
+- [x] Create placeholder pages for all 4 tabs
 
 **Test:** User can navigate between tabs. Interface is recognizable but non-functional.
 
