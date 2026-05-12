@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'Geist', sans-serif;
+      background-color: #020617; /* background-base */
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 10px;
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#bec6e0",
+            "surface": "#13131b",
+            "tertiary-container": "#d97721",
+            "on-secondary-container": "#adb4ce",
+            "tertiary": "#ffb783",
+            "on-secondary": "#283044",
+            "accent-error": "#f43f5e",
+            "on-secondary-fixed-variant": "#3f465c",
+            "primary": "#c0c1ff",
+            "accent-active": "#10b981",
+            "on-background": "#e4e1ed",
+            "surface-bright": "#393841",
+            "surface-variant": "#34343d",
+            "on-surface-variant": "#c7c4d7",
+            "secondary-fixed-dim": "#bec6e0",
+            "surface-container-lowest": "#0d0d15",
+            "surface-container-low": "#1b1b23",
+            "inverse-on-surface": "#303038",
+            "on-error": "#690005",
+            "primary-container": "#8083ff",
+            "on-tertiary-fixed-variant": "#703700",
+            "surface-container": "#1f1f27",
+            "tertiary-fixed": "#ffdcc5",
+            "error": "#ffb4ab",
+            "inverse-primary": "#494bd6",
+            "on-tertiary-container": "#452000",
+            "on-tertiary": "#4f2500",
+            "outline": "#908fa0",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed": "#dae2fd",
+            "on-primary-fixed": "#07006c",
+            "on-surface": "#e4e1ed",
+            "primary-fixed": "#e1e0ff",
+            "background": "#13131b",
+            "tertiary-fixed-dim": "#ffb783",
+            "surface-tint": "#c0c1ff",
+            "inverse-surface": "#e4e1ed",
+            "background-base": "#020617",
+            "surface-panel": "#0f172a",
+            "on-tertiary-fixed": "#301400",
+            "on-primary-fixed-variant": "#2f2ebe",
+            "primary-fixed-dim": "#c0c1ff",
+            "error-container": "#93000a",
+            "surface-border": "#1e293b",
+            "glass-fill": "rgba(255, 255, 255, 0.05)",
+            "surface-dim": "#13131b",
+            "surface-container-highest": "#34343d",
+            "on-secondary-fixed": "#131b2e",
+            "surface-container-high": "#292932",
+            "on-primary": "#1000a9",
+            "secondary-container": "#3f465c",
+            "outline-variant": "#464554",
+            "on-primary-container": "#0d0096"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "panel-gap": "1.5rem",
+            "gutter": "1rem",
+            "container-padding-mobile": "1.5rem",
+            "container-padding-desktop": "2rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Geist"],
+            "headline-lg": ["Geist"],
+            "code-md": ["JetBrains Mono"],
+            "body-md": ["Geist"],
+            "label-caps": ["Geist"],
+            "body-sm": ["Geist"]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background-base text-on-background selection:bg-primary/30 selection:text-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full h-16 flex justify-between items-center px-gutter z-50 border-b border-outline-variant bg-surface-container-low/50 backdrop-blur-md">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">
+      NGINX Intelligence
+    </div>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="font-body-sm text-body-sm text-primary border-b-2 border-primary pb-2 font-bold" href="#">Configuration</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant font-medium hover:text-on-surface transition-colors" href="#">Editor</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant font-medium hover:text-on-surface transition-colors" href="#">Visualizer</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant font-medium hover:text-on-surface transition-colors" href="#">Intelligence</a>
+</nav>
+<div class="flex items-center space-x-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-lg transition-all active:scale-95" data-icon="terminal">terminal</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-lg transition-all active:scale-95" data-icon="settings">settings</button>
+</div>
+</header>
+<!-- Main Layout -->
+<div class="flex pt-16 pb-8 h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col items-center py-4 space-y-6 bg-surface-container-lowest border-r border-outline-variant w-16 h-full shrink-0">
+<div class="flex flex-col items-center space-y-4 w-full">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-primary bg-primary-container/10 border-l-2 border-primary transition-all duration-150">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-all duration-150">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-all duration-150">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-all duration-150">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+</button>
+</div>
+<div class="mt-auto flex flex-col items-center space-y-4 w-full pb-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-all duration-150">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-accent-active/20 flex items-center justify-center border border-accent-active/50">
+<span class="material-symbols-outlined text-[14px] text-accent-active" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</aside>
+<!-- Canvas Area -->
+<main class="flex-1 overflow-y-auto custom-scrollbar bg-slate-950 p-container-padding-desktop">
+<!-- Configuration Header / Segmented Control -->
+<section class="max-w-4xl mx-auto mb-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Configuration Generator</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-lg">Optimize your NGINX environment with precise performance and security directives. Changes are validated in real-time against current schema.</p>
+</div>
+<div class="flex items-center space-x-2 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
+<button class="px-4 py-1.5 rounded text-label-caps font-label-caps bg-primary text-on-primary">Server</button>
+<button class="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">HTTPS</button>
+<button class="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">PHP</button>
+<button class="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">Security</button>
+<button class="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">Caching</button>
+</div>
+</div>
+<!-- Single Column Configuration Area -->
+<div class="space-y-panel-gap">
+<!-- Compression & Performance -->
+<div class="glass-panel p-6 rounded-xl">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary" data-icon="bolt">bolt</span>
+                  Compression &amp; Performance
+                </h3>
+</div>
+<div class="space-y-6">
+<!-- Directive Item -->
+<div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/5 hover:border-primary/20 transition-all group">
+<div>
+<p class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Enable Brotli Compression</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Superior compression for modern browsers.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/5 hover:border-primary/20 transition-all group">
+<div>
+<p class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Gzip Compression</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Legacy compression fallback for older clients.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+<div class="space-y-2">
+<label class="text-label-caps font-label-caps text-on-surface-variant">Compression Level</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-2.5 text-body-sm font-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+<option>Level 5 (Balanced)</option>
+<option>Level 9 (Maximum)</option>
+<option>Level 1 (Fastest)</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-label-caps font-label-caps text-on-surface-variant">Worker Processes</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-body-sm font-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="auto" type="number"/>
+</div>
+</div>
+</div>
+</div>
+<!-- FastCGI & Proxy Caching -->
+<div class="glass-panel p-6 rounded-xl">
+<div class="flex items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center">
+<span class="material-symbols-outlined mr-2 text-tertiary" data-icon="memory">memory</span>
+                  FastCGI &amp; Proxy Caching
+                </h3>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/5 transition-all">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant mr-3" data-icon="database">database</span>
+<p class="font-body-md text-body-md text-on-surface">Enable FastCGI Caching</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="p-4 rounded-lg bg-surface-container-low border border-outline-variant">
+<div class="flex items-center justify-between mb-4">
+<span class="text-label-caps font-label-caps text-on-surface-variant">Cache Path</span>
+<span class="text-code-md font-code-md text-accent-active">/var/run/nginx-cache</span>
+</div>
+<div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-accent-active h-full w-2/3"></div>
+</div>
+<div class="flex justify-between mt-2">
+<span class="text-[10px] text-outline">Used: 64.2GB</span>
+<span class="text-[10px] text-outline">Total: 100GB</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Generator Health -->
+<div class="glass-panel p-6 rounded-xl">
+<h4 class="text-label-caps font-label-caps text-on-surface-variant mb-4">Generator Health</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-2 h-2 rounded-full bg-accent-active mr-3"></div>
+<span class="font-body-sm text-body-sm text-on-surface">Syntax Validity</span>
+</div>
+<span class="text-accent-active font-code-md text-code-md">PASSED</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-2 h-2 rounded-full bg-accent-active mr-3 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+<span class="font-body-sm text-body-sm text-on-surface">Compliance Score</span>
+</div>
+<span class="text-accent-active font-code-md text-code-md">100%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full h-8 flex items-center justify-between px-gutter z-50 border-t border-outline-variant bg-surface-container-low font-code-md text-code-md cursor-default">
+<div class="flex items-center space-x-4">
+<span class="text-on-surface">Syntax: Valid</span>
+<span class="text-outline">|</span>
+<span class="text-accent-active">Compliance: High</span>
+<span class="text-outline">|</span>
+<span class="text-on-surface-variant">1.24.0</span>
+</div>
+<div class="flex items-center space-x-6">
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Documentation</a>
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Changelog</a>
+</div>
+</footer>
+</body></html>

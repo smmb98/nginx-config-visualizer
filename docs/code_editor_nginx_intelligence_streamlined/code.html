@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Geist:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#bec6e0",
+            "surface": "#13131b",
+            "tertiary-container": "#d97721",
+            "on-secondary-container": "#adb4ce",
+            "tertiary": "#ffb783",
+            "on-secondary": "#283044",
+            "accent-error": "#f43f5e",
+            "on-secondary-fixed-variant": "#3f465c",
+            "primary": "#c0c1ff",
+            "accent-active": "#10b981",
+            "on-background": "#e4e1ed",
+            "surface-bright": "#393841",
+            "surface-variant": "#34343d",
+            "on-surface-variant": "#c7c4d7",
+            "secondary-fixed-dim": "#bec6e0",
+            "surface-container-lowest": "#0d0d15",
+            "surface-container-low": "#1b1b23",
+            "inverse-on-surface": "#303038",
+            "on-error": "#690005",
+            "primary-container": "#8083ff",
+            "on-tertiary-fixed-variant": "#703700",
+            "surface-container": "#1f1f27",
+            "tertiary-fixed": "#ffdcc5",
+            "error": "#ffb4ab",
+            "inverse-primary": "#494bd6",
+            "on-tertiary-container": "#452000",
+            "on-tertiary": "#4f2500",
+            "outline": "#908fa0",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed": "#dae2fd",
+            "on-primary-fixed": "#07006c",
+            "on-surface": "#e4e1ed",
+            "primary-fixed": "#e1e0ff",
+            "background": "#13131b",
+            "tertiary-fixed-dim": "#ffb783",
+            "surface-tint": "#c0c1ff",
+            "inverse-surface": "#e4e1ed",
+            "background-base": "#020617",
+            "surface-panel": "#0f172a",
+            "on-tertiary-fixed": "#301400",
+            "on-primary-fixed-variant": "#2f2ebe",
+            "primary-fixed-dim": "#c0c1ff",
+            "error-container": "#93000a",
+            "surface-border": "#1e293b",
+            "glass-fill": "rgba(255, 255, 255, 0.05)",
+            "surface-dim": "#13131b",
+            "surface-container-highest": "#34343d",
+            "on-secondary-fixed": "#131b2e",
+            "surface-container-high": "#292932",
+            "on-primary": "#1000a9",
+            "secondary-container": "#3f465c",
+            "outline-variant": "#464554",
+            "on-primary-container": "#0d0096"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "panel-gap": "1.5rem",
+            "gutter": "1rem",
+            "container-padding-mobile": "1.5rem",
+            "container-padding-desktop": "2rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Geist"],
+            "headline-lg": ["Geist"],
+            "code-md": ["JetBrains Mono"],
+            "body-md": ["Geist"],
+            "label-caps": ["Geist"],
+            "body-sm": ["Geist"]
+          },
+          "fontSize": {
+            "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+            "code-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body { background-color: #13131b; color: #e4e1ed; font-family: 'Geist', sans-serif; overflow: hidden; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #464554; border-radius: 10px; }
+    .editor-container { height: calc(100vh - 64px - 32px); }
+    .glass-pane { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    .syntax-keyword { color: #c0c1ff; font-weight: 500; }
+    .syntax-variable { color: #ffb783; }
+    .syntax-string { color: #10b981; }
+    .syntax-comment { color: #908fa0; font-style: italic; }
+    .syntax-error-underline { border-bottom: 2px wavy #f43f5e; }
+  </style>
+</head>
+<body class="flex flex-col h-screen">
+<!-- TopNavBar (JSON Authority) -->
+<header class="flex justify-between items-center w-full px-gutter h-16 bg-surface border-b border-outline-variant bg-surface-container-low/50 backdrop-blur-md z-50">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tighter">NGINX Intelligence</div>
+<nav class="flex gap-8">
+<a class="font-body-sm text-body-sm text-on-surface-variant font-medium hover:text-on-surface transition-colors" href="#">Configuration</a>
+<a class="font-body-sm text-body-sm text-primary border-b-2 border-primary pb-2 font-bold" href="#">Editor</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant font-medium hover:text-on-surface transition-colors" href="#">Visualizer</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant font-medium hover:text-on-surface transition-colors" href="#">Intelligence</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-all">terminal</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-all">settings</button>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar (JSON Authority) -->
+<aside class="flex flex-col items-center py-4 space-y-6 bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-outline-variant w-16">
+<div class="flex flex-col items-center gap-6">
+<div class="flex flex-col items-center w-full group">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-all duration-150">
+<span class="material-symbols-outlined">folder_open</span>
+</div>
+</div>
+<div class="flex flex-col items-center w-full group">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg text-primary bg-primary-container/10 border-l-2 border-primary transition-all duration-150">
+<span class="material-symbols-outlined">search</span>
+</div>
+</div>
+<div class="flex flex-col items-center w-full group">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-all duration-150">
+<span class="material-symbols-outlined">account_tree</span>
+</div>
+</div>
+<div class="flex flex-col items-center w-full group">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg text-outline hover:text-on-surface hover:bg-surface-variant transition-all duration-150">
+<span class="material-symbols-outlined">list_alt</span>
+</div>
+</div>
+</div>
+<div class="mt-auto flex flex-col items-center gap-6">
+<span class="material-symbols-outlined text-outline hover:text-on-surface">shield</span>
+<span class="material-symbols-outlined text-accent-active" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</aside>
+<!-- Main Content: Editor & Tree -->
+<main class="flex flex-1 bg-background-base">
+<!-- File Tree (3-Column philosophy: Left) -->
+<nav class="w-64 bg-surface-container-lowest border-r border-outline-variant flex flex-col">
+<div class="p-4 border-b border-outline-variant flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline tracking-widest">FILESYSTEM</span>
+<span class="material-symbols-outlined text-xs text-outline">add_box</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-2">
+<div class="space-y-1">
+<!-- Project Folder -->
+<div class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant font-body-sm">
+<span class="material-symbols-outlined text-lg">expand_more</span>
+<span class="material-symbols-outlined text-lg text-tertiary">folder</span>
+<span>/etc/nginx</span>
+</div>
+<!-- Sub Files -->
+<div class="ml-6 space-y-0.5">
+<div class="flex items-center gap-2 px-3 py-1.5 text-primary bg-primary-container/10 border-l-2 border-primary font-body-sm cursor-pointer">
+<span class="material-symbols-outlined text-lg">description</span>
+<span>nginx.conf</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:bg-surface-variant/30 rounded transition-colors font-body-sm cursor-pointer">
+<span class="material-symbols-outlined text-lg">description</span>
+<span>mime.types</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:bg-surface-variant/30 rounded transition-colors font-body-sm cursor-pointer">
+<span class="material-symbols-outlined text-lg">folder</span>
+<span>conf.d</span>
+</div>
+<div class="ml-4 space-y-0.5">
+<div class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:bg-surface-variant/30 rounded transition-colors font-body-sm cursor-pointer">
+<span class="material-symbols-outlined text-lg">settings_ethernet</span>
+<span>ssl.inc</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:bg-surface-variant/30 rounded transition-colors font-body-sm cursor-pointer">
+<span class="material-symbols-outlined text-lg">settings_ethernet</span>
+<span>proxy.inc</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- Code Editor Canvas (Center/Right) -->
+<section class="flex-1 flex flex-col bg-surface relative editor-container overflow-hidden">
+<!-- Editor Tabs -->
+<div class="flex bg-surface-container-low h-10 border-b border-outline-variant">
+<div class="flex items-center gap-2 px-4 bg-surface border-r border-outline-variant border-t-2 border-t-primary text-on-surface text-body-sm font-medium">
+<span class="material-symbols-outlined text-base">description</span>
+            nginx.conf
+            <span class="material-symbols-outlined text-xs hover:bg-surface-variant rounded p-0.5">close</span>
+</div>
+<div class="flex items-center gap-2 px-4 text-on-surface-variant hover:bg-surface-variant/50 border-r border-outline-variant text-body-sm cursor-pointer">
+<span class="material-symbols-outlined text-base">settings_ethernet</span>
+            ssl.inc
+            <span class="material-symbols-outlined text-xs">close</span>
+</div>
+</div>
+<!-- Editor Viewport -->
+<div class="flex-1 flex font-code-md text-code-md relative overflow-hidden">
+<!-- Gutter -->
+<div class="w-12 bg-surface-container-low flex flex-col items-center py-4 text-outline select-none space-y-1">
+<span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+<span class="text-accent-error">6</span>
+<span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+</div>
+<!-- Code Content -->
+<div class="flex-1 p-4 overflow-y-auto custom-scrollbar whitespace-pre leading-relaxed text-on-surface/90">
+<span class="syntax-keyword">worker_processes</span>  auto;
+
+<span class="syntax-keyword">events</span> {
+    <span class="syntax-keyword">worker_connections</span>  1024;
+}
+
+<span class="syntax-keyword">http</span> {
+    <span class="syntax-keyword">include</span>       mime.types;
+    <span class="syntax-keyword">default_type</span>  application/octet-stream;
+
+    <span class="syntax-keyword">server</span> {
+        <span class="syntax-keyword">listen</span>       443 ssl;
+        <span class="syntax-keyword">server_name</span>  localhost;
+
+        <span class="syntax-comment"># Weak SSL Ciphers Detected</span>
+<span class="syntax-keyword">ssl_ciphers</span> <span class="syntax-error-underline text-accent-error font-bold">RC4-SHA:AES128-SHA</span>;
+
+        <span class="syntax-keyword">location</span> / {
+            <span class="syntax-keyword">proxy_pass</span> <span class="syntax-string">http://backend_cluster</span>;
+        }
+    }
+}</div>
+<!-- Floating Quick Fix Suggester (Glassmorphism Node) -->
+<div class="absolute top-[340px] left-64 glass-pane rounded-lg p-4 shadow-2xl z-20 w-80 animate-in fade-in duration-300">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-accent-error">lightbulb</span>
+<div class="space-y-2">
+<p class="font-body-sm text-on-surface font-bold">Security Violation: Weak Ciphers</p>
+<p class="font-body-sm text-on-surface-variant">The current configuration uses RC4-SHA which is susceptible to several cryptographic attacks.</p>
+<div class="flex gap-2 pt-2">
+<button class="px-3 py-1.5 bg-primary text-on-primary-container font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-all">
+                    QUICK FIX: MODERN
+                  </button>
+<button class="px-3 py-1.5 border border-outline-variant text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-variant/50 transition-all">
+                    IGNORE
+                  </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Analysis Overlay Widget -->
+<div class="absolute top-8 right-8 w-64 glass-pane p-4 rounded-xl flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline">LIVE ANALYSIS</span>
+<span class="w-2 h-2 rounded-full bg-accent-active shadow-[0_0_8px_#10b981]"></span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Active Connections</span>
+<span class="text-primary font-code-md">1.2k</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[65%]"></div>
+</div>
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-on-surface-variant">Validation Status</span>
+<span class="text-accent-error font-medium">Failed</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Footer (JSON Authority) -->
+<footer class="flex items-center justify-between px-gutter w-full z-50 fixed bottom-0 h-8 bg-surface-container-low border-t border-outline-variant">
+<div class="font-code-md text-code-md text-on-surface">Syntax: Valid | Security: High | 1.24.0</div>
+<div class="flex gap-6 items-center">
+<a class="font-code-md text-code-md text-on-surface-variant hover:text-primary transition-colors cursor-default" href="#">Documentation</a>
+<a class="font-code-md text-code-md text-on-surface-variant hover:text-primary transition-colors cursor-default" href="#">Changelog</a>
+</div>
+</footer>
+</body></html>
