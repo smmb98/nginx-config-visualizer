@@ -1,5 +1,6 @@
 import Editor from '@monaco-editor/react';
-import { useAppStore } from '../Stores/useAppStore';
+import { useAppStore } from '@/Stores/useAppStore';
+import { Button } from '@/components/ui/button';
 
 export function EditorView() {
   const { configContent, setConfigContent } = useAppStore();
@@ -100,12 +101,12 @@ export function EditorView() {
                     The current configuration uses RC4-SHA which is susceptible to several cryptographic attacks.
                   </p>
                   <div className="flex gap-2 pt-2">
-                    <button className="px-3 py-1.5 bg-primary text-on-primary-container font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-all">
+                    <Button size="sm" className="bg-primary text-on-primary-container font-label-caps">
                       QUICK FIX: MODERN
-                    </button>
-                    <button className="px-3 py-1.5 border border-outline-variant text-on-surface font-label-caps text-label-caps rounded-lg hover:bg-surface-variant/50 transition-all">
+                    </Button>
+                    <Button size="sm" variant="outline" className="border border-outline-variant text-on-surface hover:bg-surface-variant/50">
                       IGNORE
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

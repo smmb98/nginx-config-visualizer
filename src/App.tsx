@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Header } from './Components/Header';
-import { SideNavBar } from './Components/SideNavBar';
 import { Footer } from './Components/Footer';
 import { ConfigurationView } from './Views/ConfigurationView';
 import { EditorView } from './Views/EditorView';
@@ -75,8 +74,7 @@ function App() {
   return (
     <div className="h-screen flex flex-col bg-background-base">
       <Header />
-      <div className="flex flex-1 pt-16 pb-8 overflow-hidden">
-        <SideNavBar />
+      <div className="flex-1 pt-16 pb-8 overflow-hidden">
         {renderView()}
       </div>
       <Footer />

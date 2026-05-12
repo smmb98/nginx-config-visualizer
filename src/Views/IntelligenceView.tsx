@@ -1,6 +1,10 @@
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+
 export function IntelligenceView() {
   return (
-    <main className="flex-1 overflow-y-auto custom-scrollbar bg-slate-950 p-panel-gap">
+    <main className="flex-1 overflow-y-auto custom-scrollbar bg-slate-950 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section: Natural Language Summary */}
         <section>
@@ -76,16 +80,16 @@ export function IntelligenceView() {
                     </span>
                   </div>
                 </div>
-                <button className="bg-primary text-on-primary font-bold px-4 py-2 rounded-full text-body-sm hover:opacity-90 transition-all scale-95 active:scale-90">
+                <Button size="sm" className="bg-primary text-on-primary font-bold px-4 rounded-full text-body-sm">
                   View Full Insights
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         </section>
 
         {/* Middle Section: Security Audit Checklist */}
-        <section className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-panel-gap">
+        <section className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="space-y-6 lg:col-span-3">
             <div className="glass-panel p-6 rounded-xl h-full flex flex-col">
               <h3 className="font-headline-md text-headline-md mb-2">Security Audit</h3>
@@ -137,14 +141,14 @@ export function IntelligenceView() {
                   </span>
                 </div>
               </div>
-              <button className="mt-6 w-full py-2 border border-outline-variant rounded-lg font-body-sm hover:bg-surface-variant transition-colors">
+              <Button variant="outline" className="mt-6 w-full border border-outline-variant">
                 Generate Report
-              </button>
+              </Button>
             </div>
           </div>
         </section>
 
-        {/* Bottom Section: Optimizations & Tradeoffs Table */}
+        {/* Bottom Section: Optimizations & Tradeoffs */}
         <section className="max-w-7xl mx-auto pb-12">
           <div className="glass-panel rounded-xl overflow-hidden">
             <div className="p-6 border-b border-outline-variant">
@@ -193,7 +197,9 @@ export function IntelligenceView() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="text-primary font-bold text-body-sm hover:underline">Apply</button>
+                        <Button variant="link" className="text-primary font-bold text-body-sm p-0 hover:underline">
+                          Apply
+                        </Button>
                       </td>
                     </tr>
                   ))}

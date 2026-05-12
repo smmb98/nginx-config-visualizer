@@ -9,7 +9,8 @@ import ReactFlow, {
   Panel,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { useAppStore } from '../Stores/useAppStore';
+import { useAppStore } from '@/Stores/useAppStore';
+import { Button } from '@/components/ui/button';
 
 const nodeTypes = {
   default: ({ data }: { data: { label: string; locations?: Array<{ path: string; proxy: string }> } }) => (
@@ -61,7 +62,7 @@ const nodeTypes = {
 export function VisualizerView() {
   const { flowNodes, flowEdges } = useAppStore();
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes);
-  const [edges, , onEdgesChange] = useEdgesState(flowEdges);
+  const [, , onEdgesChange] = useEdgesState(flowEdges);
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
@@ -78,13 +79,17 @@ export function VisualizerView() {
     [setNodes]
   );
 
+  // Simple button variant for icon buttons
+  const iconButtonClass = "h-9 w-9 p-0 hover:bg-surface-variant/50";
+
   return (
     <main className="flex-1 pt-16 pb-8 relative overflow-hidden bg-background-base">
+      {/* Dot grid background */}
       <div className="absolute inset-0 dot-grid pointer-events-none" />
 
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={flowEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
@@ -104,20 +109,21 @@ export function VisualizerView() {
           maskColor="rgba(2, 6, 23, 0.8)"
         />
 
+        {/* Floating Controls */}
         <Panel position="bottom-right" className="m-4">
           <div className="flex flex-col gap-2">
             <div className="bg-surface-container-high rounded-lg p-1 border border-outline-variant flex flex-col shadow-xl">
-              <button className="p-2 hover:bg-surface-variant transition-colors rounded">
+              <Button variant="ghost" size="icon" className={iconButtonClass}>
                 <span className="material-symbols-outlined text-on-surface-variant">add</span>
-              </button>
+              </Button>
               <div className="h-px bg-outline-variant mx-2"></div>
-              <button className="p-2 hover:bg-surface-variant transition-colors rounded">
+              <Button variant="ghost" size="icon" className={iconButtonClass}>
                 <span className="material-symbols-outlined text-on-surface-variant">remove</span>
-              </button>
+              </Button>
             </div>
-            <button className="p-3 bg-surface-container-high border border-outline-variant rounded-lg text-on-surface-variant shadow-xl hover:text-primary transition-colors">
+            <Button variant="outline" size="icon" className={iconButtonClass + " border border-outline-variant"}>
               <span className="material-symbols-outlined">fit_screen</span>
-            </button>
+            </Button>
           </div>
         </Panel>
       </ReactFlow>

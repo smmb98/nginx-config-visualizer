@@ -1,11 +1,10 @@
-import { useAppStore } from '../Stores/useAppStore';
-
-type View = 'configuration' | 'editor' | 'visualizer' | 'intelligence';
+import { Button } from '@/components/ui/button';
+import { useAppStore } from '@/Stores/useAppStore';
 
 export function Header() {
-  const { currentView, setCurrentView } = useAppStore();
+  const { setCurrentView, currentView } = useAppStore();
 
-  const navItems: { view: View; label: string }[] = [
+  const navItems: { view: string; label: string }[] = [
     { view: 'configuration', label: 'Configuration' },
     { view: 'editor', label: 'Editor' },
     { view: 'visualizer', label: 'Visualizer' },
@@ -13,7 +12,7 @@ export function Header() {
   ];
 
   return (
-    <header className="docked full-width top-0 border-b border-outline-variant bg-surface-container-low/50 backdrop-blur-md flex justify-between items-center w-full px-gutter h-16 z-50">
+    <header className="docked full-width top-0 border-b border-outline-variant bg-surface-container-low/50 backdrop-blur-md flex justify-between items-center w-full px-4 h-16 z-50">
       {/* Logo */}
       <div className="font-headline-md text-headline-md font-bold text-primary tracking-tighter">
         NGINX Intelligence
@@ -22,29 +21,29 @@ export function Header() {
       {/* Navigation */}
       <nav className="hidden md:flex items-center space-x-6">
         {navItems.map((item) => (
-          <a
+          <Button
             key={item.view}
-            onClick={() => setCurrentView(item.view)}
-            className={`font-body-sm text-body-sm cursor-pointer transition-colors ${
+            onClick={() => setCurrentView(item.view as any)}
+            variant="ghost"
+            className={`font-body-sm text-body-sm cursor-pointer transition-colors h-auto p-0 hover:bg-transparent ${
               currentView === item.view
                 ? 'text-primary border-b-2 border-primary pb-2 font-bold'
-                : 'text-on-surface-variant font-medium hover:text-on-surface'
+                : 'text-on-surface-variant hover:text-on-surface'
             }`}
-            href="#"
           >
             {item.label}
-          </a>
+          </Button>
         ))}
       </nav>
 
       {/* Actions */}
-      <div className="flex items-center space-x-4">
-        <button className="material-symbols-outlined text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-lg transition-all duration-200">
-          terminal
-        </button>
-        <button className="material-symbols-outlined text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-lg transition-all duration-200">
-          settings
-        </button>
+      <div className="flex items-center space-x-2">
+        <Button variant="ghost" size="icon" className="h-9 w-9">
+          <span className="material-symbols-outlined text-on-surface-variant">terminal</span>
+        </Button>
+        <Button variant="ghost" size="icon" className="h-9 w-9">
+          <span className="material-symbols-outlined text-on-surface-variant">settings</span>
+        </Button>
       </div>
     </header>
   );

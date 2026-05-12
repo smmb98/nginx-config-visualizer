@@ -1,7 +1,19 @@
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+
 export function ConfigurationView() {
   return (
     <main className="flex-1 overflow-y-auto custom-scrollbar bg-surface pt-16 pb-8">
-      <div className="max-w-4xl mx-auto mb-10 px-gutter md:px-container-padding-desktop">
+      <div className="max-w-4xl mx-auto mb-10 px-4 md:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
@@ -16,26 +28,26 @@ export function ConfigurationView() {
 
           {/* Category Tabs */}
           <div className="flex items-center space-x-2 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
-            <button className="px-4 py-1.5 rounded text-label-caps font-label-caps bg-primary text-on-primary">
+            <Button variant="ghost" className="px-4 py-1.5 rounded text-label-caps font-label-caps bg-primary text-on-primary hover:bg-primary/90">
               Server
-            </button>
-            <button className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">
+            </Button>
+            <Button variant="ghost" className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface hover:bg-transparent">
               HTTPS
-            </button>
-            <button className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">
+            </Button>
+            <Button variant="ghost" className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface hover:bg-transparent">
               PHP
-            </button>
-            <button className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">
+            </Button>
+            <Button variant="ghost" className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface hover:bg-transparent">
               Security
-            </button>
-            <button className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface transition-colors">
+            </Button>
+            <Button variant="ghost" className="px-4 py-1.5 rounded text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface hover:bg-transparent">
               Caching
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Configuration Panels */}
-        <div className="space-y-panel-gap">
+        <div className="space-y-6">
           {/* Compression & Performance */}
           <div className="glass-panel p-6 rounded-xl">
             <div className="flex items-center justify-between mb-6">
@@ -52,9 +64,9 @@ export function ConfigurationView() {
               {[
                 { name: 'Enable Brotli Compression', desc: 'Superior compression for modern browsers.', checked: true },
                 { name: 'Gzip Compression', desc: 'Legacy compression fallback for older clients.', checked: true },
-              ].map((item, idx) => (
+              ].map((item) => (
                 <div
-                  key={idx}
+                  key={item.name}
                   className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/5 hover:border-primary/20 transition-all group"
                 >
                   <div>
@@ -64,39 +76,35 @@ export function ConfigurationView() {
                     <p className="font-body-sm text-body-sm text-on-surface-variant">{item.desc}</p>
                   </div>
 
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked={item.checked}
-                      className="sr-only peer"
-                      readOnly
-                    />
-                    <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                  </label>
+                  <Switch defaultChecked={item.checked} />
                 </div>
               ))}
 
               {/* Form fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-2">
-                  <label className="text-label-caps font-label-caps text-on-surface-variant">
+                  <Label className="text-label-caps font-label-caps text-on-surface-variant">
                     Compression Level
-                  </label>
-                  <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-2.5 text-body-sm font-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                    <option>Level 5 (Balanced)</option>
-                    <option>Level 9 (Maximum)</option>
-                    <option>Level 1 (Fastest)</option>
-                  </select>
+                  </Label>
+                  <Select defaultValue="5">
+                    <SelectTrigger className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg">
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">Level 5 (Balanced)</SelectItem>
+                      <SelectItem value="9">Level 9 (Maximum)</SelectItem>
+                      <SelectItem value="1">Level 1 (Fastest)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-label-caps font-label-caps text-on-surface-variant">
+                  <Label className="text-label-caps font-label-caps text-on-surface-variant">
                     Worker Processes
-                  </label>
-                  <input
-                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-2 text-body-sm font-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                  </Label>
+                  <Input
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg"
                     placeholder="auto"
-                    type="number"
                   />
                 </div>
               </div>
@@ -124,18 +132,15 @@ export function ConfigurationView() {
                   <p className="font-body-md text-body-md text-on-surface">Enable FastCGI Caching</p>
                 </div>
 
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" defaultChecked className="sr-only peer" readOnly />
-                  <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                </label>
+                <Switch defaultChecked />
               </div>
 
               {/* Cache path display */}
               <div className="p-4 rounded-lg bg-surface-container-low border border-outline-variant">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-label-caps font-label-caps text-on-surface-variant">
+                  <Label className="text-label-caps font-label-caps text-on-surface-variant">
                     Cache Path
-                  </span>
+                  </Label>
                   <span className="text-code-md font-code-md text-accent-active">/var/run/nginx-cache</span>
                 </div>
                 <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
@@ -151,9 +156,9 @@ export function ConfigurationView() {
 
           {/* Generator Health */}
           <div className="glass-panel p-6 rounded-xl">
-            <h4 className="text-label-caps font-label-caps text-on-surface-variant mb-4">
+            <Label className="text-label-caps font-label-caps text-on-surface-variant mb-4 block">
               Generator Health
-            </h4>
+            </Label>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
