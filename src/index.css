@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -68,7 +69,7 @@ body {
 }
 
 @theme inline {
-  --font-heading: var(--font-mono);
+  --font-heading: var(--font-sans);
   --font-mono: 'JetBrains Mono Variable', monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -108,6 +109,7 @@ body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --font-sans: 'Geist Variable', sans-serif;
 }
 
 :root {
@@ -153,6 +155,6 @@ body {
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-mono;
+    @apply font-sans;
   }
 }

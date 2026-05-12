@@ -5,7 +5,7 @@ import useEmblaCarousel, {
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -183,7 +183,7 @@ function CarouselPrevious({
       variant={variant}
       size={size}
       className={cn(
-        "absolute touch-manipulation",
+        "absolute touch-manipulation rounded-full",
         orientation === "horizontal"
           ? "top-1/2 -left-12 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
@@ -193,13 +193,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <IconPlaceholder
-        lucide="ChevronLeftIcon"
-        tabler="IconChevronLeft"
-        hugeicons="ArrowLeft01Icon"
-        phosphor="CaretLeftIcon"
-        remixicon="RiArrowLeftSLine"
-      />
+      <ChevronLeftIcon />
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -219,7 +213,7 @@ function CarouselNext({
       variant={variant}
       size={size}
       className={cn(
-        "absolute touch-manipulation",
+        "absolute touch-manipulation rounded-full",
         orientation === "horizontal"
           ? "top-1/2 -right-12 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
@@ -229,13 +223,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <IconPlaceholder
-        lucide="ChevronRightIcon"
-        tabler="IconChevronRight"
-        hugeicons="ArrowRight01Icon"
-        phosphor="CaretRightIcon"
-        remixicon="RiArrowRightSLine"
-      />
+      <ChevronRightIcon />
       <span className="sr-only">Next slide</span>
     </Button>
   )
