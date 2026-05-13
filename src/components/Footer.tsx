@@ -1,85 +1,39 @@
-import { BookOpen, Coffee } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
-import { cn } from "@/lib/utils";
 
 export function Footer() {
-  const { syntaxErrors, healthScore, isInitialized } = useAppStore();
-
-  if (!isInitialized) return null;
+  const { syntaxErrors, healthScore } = useAppStore();
 
   const syntaxValid = syntaxErrors.length === 0;
+  const securityLabel =
+    healthScore >= 80 ? "High" : healthScore >= 60 ? "Medium" : "Low";
+  const securityColor =
+    healthScore >= 80
+      ? "text-accent-active"
+      : healthScore >= 60
+        ? "text-tertiary"
+        : "text-accent-error";
 
   return (
-    <footer className="h-12 border-t border-border bg-surface px-4 flex items-center justify-between">
-      {/* Left - Status Indicators */}
+    <footer className="fixed bottom-0 w-full h-8 flex items-center px-6 z-50 border-t border-outline-variant bg-surface-container-low text-code-md">
       <div className="flex items-center gap-4">
-        {/* Syntax Status */}
-        <div className="flex items-center gap-2">
-          <div
-            className={cn(
-              "w-2 h-2 rounded-full",
-              syntaxValid ? "bg-accent-active" : "bg-accent-error",
-            )}
-          />
-          <span className="text-xs text-on-surface-variant">
-            Syntax: {syntaxValid ? "Valid" : "Invalid"}
+        <span className="text-on-surface-variant">
+          Syntax:{" "}
+          <span
+            className={
+              syntaxValid
+                ? "text-accent-active font-bold"
+                : "text-accent-error font-bold"
+            }
+          >
+            {syntaxValid ? "Valid" : "Invalid"}
           </span>
-        </div>
-
-        {/* Health Score */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-on-surface-variant">Health:</span>
-          <div className="flex items-center gap-1">
-            <div className="w-16 h-1.5 rounded-full bg-surface-variant overflow-hidden">
-              <div
-                className={cn(
-                  "h-full transition-all",
-                  healthScore >= 80
-                    ? "bg-accent-active"
-                    : healthScore >= 60
-                      ? "bg-yellow-500"
-                      : "bg-accent-error",
-                )}
-                style={{ width: `${healthScore}%` }}
-              />
-            </div>
-            <span className="text-xs text-on-surface w-8">{healthScore}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Right - Monetization Links */}
-      <div className="flex items-center gap-3">
-        {/* Temporarily disabled - GitHub icon not available in lucide-react
-        <a
-          href="https://github.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-on-surface-variant hover:text-on-surface transition-colors"
-          title="View on GitHub"
-        >
-          <Github className="w-4 h-4" />
-        </a>
-        */}
-        <a
-          href="https://buymeacoffee.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 px-2 py-1 rounded-md bg-accent-active/10 text-accent-active hover:bg-accent-active/20 transition-colors text-xs font-medium"
-          title="Support development"
-        >
-          <Coffee className="w-3.5 h-3.5" />
-          <span>Donate</span>
-        </a>
-        <a
-          href="https://github.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-on-surface-variant hover:text-on-surface transition-colors"
-          title="Documentation"
-        >
-          <BookOpen className="w-4 h-4" />
-        </a>
+        </span>
+        <span className="text-outline-variant select-none">|</span>
+        <span className="text-on-surface-variant">
+          Security:{" "}
+          <span className={`${securityColor} font-bold`}>{securityLabel}</span>
+        </span>
+        <span className="text-outline-variant select-none">|</span>
       </div>
     </footer>
   );

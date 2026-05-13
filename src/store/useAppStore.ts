@@ -1,68 +1,73 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface FileSystemNode {
-  id: string
-  name: string
-  type: 'file' | 'directory'
-  content?: string
-  children?: FileSystemNode[]
-  parentId?: string
+  id: string;
+  name: string;
+  type: "file" | "directory";
+  content?: string;
+  children?: FileSystemNode[];
+  parentId?: string;
 }
 
 export interface NginxConfig {
-  // Stub for parsed config
-  raw: string
-  ast: unknown
+  raw: string;
+  ast: unknown;
 }
 
 export interface SyntaxError {
-  line: number
-  column: number
-  message: string
+  line: number;
+  column: number;
+  message: string;
 }
 
 export interface SecurityAuditResult {
-  id: string
-  severity: 'critical' | 'warning' | 'info'
-  message: string
-  directive?: string
+  id: string;
+  severity: "critical" | "warning" | "info";
+  message: string;
+  directive?: string;
 }
 
-export type TabType = 'ui' | 'code' | 'visual' | 'analytics'
+export type TabType = "ui" | "code" | "visual" | "analytics";
 
 interface AppState {
   // File System State
-  fileSystem: FileSystemNode[]
-  activeFileId: string | null
+  fileSystem: FileSystemNode[];
+  activeFileId: string | null;
 
   // Configuration State
-  rawConfig: string
-  parsedConfig: NginxConfig | null
+  rawConfig: string;
+  parsedConfig: NginxConfig | null;
 
   // UI State
-  activeTab: TabType
-  sidebarCollapsed: boolean
-  isInitialized: boolean
+  activeTab: TabType;
+  sidebarCollapsed: boolean;
+  isInitialized: boolean;
+
+  // File tree UI preferences (persisted)
+  sidebarSizePct: number; // percentage (0–100) of the panel group width
+  expandedDirs: string[]; // array of expanded directory IDs
 
   // Parse Results
-  syntaxErrors: SyntaxError[]
-  securityAudits: SecurityAuditResult[]
-  healthScore: number
+  syntaxErrors: SyntaxError[];
+  securityAudits: SecurityAuditResult[];
+  healthScore: number;
 
   // Actions
-  initializeWorkspace: (files?: FileSystemNode[]) => void
-  importFiles: (files: FileList) => void
-  createNewConfig: () => void
-  selectFile: (fileId: string) => void
-  updateConfig: (content: string) => void
-  switchTab: (tab: TabType) => void
-  toggleSidebar: () => void
-  resetWorkspace: () => void
-  setParsedConfig: (config: NginxConfig | null) => void
-  setSyntaxErrors: (errors: SyntaxError[]) => void
-  setSecurityAudits: (audits: SecurityAuditResult[]) => void
-  setHealthScore: (score: number) => void
+  initializeWorkspace: (files?: FileSystemNode[]) => void;
+  importFiles: (files: FileList) => void;
+  createNewConfig: () => void;
+  selectFile: (fileId: string) => void;
+  updateConfig: (content: string) => void;
+  switchTab: (tab: TabType) => void;
+  toggleSidebar: () => void;
+  setSidebarSizePct: (pct: number) => void;
+  setExpandedDirs: (dirs: string[]) => void;
+  resetWorkspace: () => void;
+  setParsedConfig: (config: NginxConfig | null) => void;
+  setSyntaxErrors: (errors: SyntaxError[]) => void;
+  setSecurityAudits: (audits: SecurityAuditResult[]) => void;
+  setHealthScore: (score: number) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -71,11 +76,13 @@ export const useAppStore = create<AppState>()(
       // Initial State
       fileSystem: [],
       activeFileId: null,
-      rawConfig: '',
+      rawConfig: "",
       parsedConfig: null,
-      activeTab: 'ui',
+      activeTab: "ui",
       sidebarCollapsed: false,
       isInitialized: false,
+      sidebarSizePct: 20,
+      expandedDirs: ["/etc/nginx"],
       syntaxErrors: [],
       securityAudits: [],
       healthScore: 0,
@@ -85,28 +92,30 @@ export const useAppStore = create<AppState>()(
         set({
           fileSystem: files.length > 0 ? files : getDefaultFileSystem(),
           isInitialized: true,
-          activeFileId: files.length > 0 ? files[0]?.id : '/etc/nginx/nginx.conf'
-        })
+          activeFileId:
+            files.length > 0 ? files[0]?.id : "/etc/nginx/nginx.conf",
+        });
       },
 
       importFiles: (files: FileList) => {
         Array.from(files).forEach((file) => {
-          const reader = new FileReader()
+          const reader = new FileReader();
           reader.onload = (e) => {
-            const content = e.target?.result as string
+            const content = e.target?.result as string;
             const node: FileSystemNode = {
               id: `/etc/nginx/${file.name}`,
               name: file.name,
-              type: 'file',
+              type: "file",
               content,
-              parentId: '/etc/nginx'
-            }
+              parentId: "/etc/nginx",
+            };
             set((state) => ({
-              fileSystem: [...state.fileSystem, node]
-            }))
-          }
-          reader.readAsText(file)
-        })
+              fileSystem: [...state.fileSystem, node],
+              isInitialized: true,
+            }));
+          };
+          reader.readAsText(file);
+        });
       },
 
       createNewConfig: () => {
@@ -143,75 +152,94 @@ http {
 
     include /etc/nginx/conf.d/*.conf;
     include /etc/nginx/sites-enabled/*;
-}`
+}`;
 
         const nginxFile: FileSystemNode = {
-          id: '/etc/nginx/nginx.conf',
-          name: 'nginx.conf',
-          type: 'file',
+          id: "/etc/nginx/nginx.conf",
+          name: "nginx.conf",
+          type: "file",
           content: defaultNginxConf,
-          parentId: '/etc/nginx'
-        }
+          parentId: "/etc/nginx",
+        };
 
         const rootDir: FileSystemNode = {
-          id: '/etc/nginx',
-          name: 'nginx',
-          type: 'directory',
+          id: "/etc/nginx",
+          name: "nginx",
+          type: "directory",
           children: [nginxFile],
-          parentId: undefined
-        }
+          parentId: undefined,
+        };
 
         set({
           fileSystem: [rootDir],
           isInitialized: true,
-          activeFileId: '/etc/nginx/nginx.conf',
-          rawConfig: defaultNginxConf
-        })
+          activeFileId: "/etc/nginx/nginx.conf",
+          rawConfig: defaultNginxConf,
+          expandedDirs: ["/etc/nginx"],
+        });
       },
 
       selectFile: (fileId: string) => {
-        const file = get().fileSystem.find((node) => node.id === fileId)
-        if (file && file.type === 'file') {
-          set({
-            activeFileId: fileId,
-            rawConfig: file.content || ''
-          })
+        // Search recursively through the file system tree
+        const findFile = (
+          nodes: FileSystemNode[]
+        ): FileSystemNode | undefined => {
+          for (const node of nodes) {
+            if (node.id === fileId) return node;
+            if (node.children) {
+              const found = findFile(node.children);
+              if (found) return found;
+            }
+          }
+        };
+        const file = findFile(get().fileSystem);
+        if (file && file.type === "file") {
+          set({ activeFileId: fileId, rawConfig: file.content || "" });
         }
       },
 
       updateConfig: (content: string) => {
-        set({ rawConfig: content })
-        // Update file system node content
+        const updateNode = (
+          nodes: FileSystemNode[],
+          targetId: string
+        ): FileSystemNode[] =>
+          nodes.map((node) => {
+            if (node.id === targetId) return { ...node, content };
+            if (node.children)
+              return { ...node, children: updateNode(node.children, targetId) };
+            return node;
+          });
         set((state) => ({
-          fileSystem: state.fileSystem.map((node) =>
-            node.id === state.activeFileId
-              ? { ...node, content }
-              : node
-          )
-        }))
+          rawConfig: content,
+          fileSystem: state.activeFileId
+            ? updateNode(state.fileSystem, state.activeFileId)
+            : state.fileSystem,
+        }));
       },
 
-      switchTab: (tab: TabType) => {
-        set({ activeTab: tab })
-      },
+      switchTab: (tab: TabType) => set({ activeTab: tab }),
 
-      toggleSidebar: () => {
-        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }))
-      },
+      toggleSidebar: () =>
+        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+
+      setSidebarSizePct: (pct: number) => set({ sidebarSizePct: pct }),
+
+      setExpandedDirs: (dirs: string[]) => set({ expandedDirs: dirs }),
 
       resetWorkspace: () => {
         set({
           fileSystem: [],
           activeFileId: null,
-          rawConfig: '',
+          rawConfig: "",
           parsedConfig: null,
-          activeTab: 'ui',
+          activeTab: "ui",
           sidebarCollapsed: false,
           isInitialized: false,
+          expandedDirs: ["/etc/nginx"],
           syntaxErrors: [],
           securityAudits: [],
-          healthScore: 0
-        })
+          healthScore: 0,
+        });
       },
 
       setParsedConfig: (config) => set({ parsedConfig: config }),
@@ -220,35 +248,37 @@ http {
       setHealthScore: (score) => set({ healthScore: score }),
     }),
     {
-      name: 'nginx-visualizer-storage',
+      name: "nginx-visualizer-storage",
       partialize: (state) => ({
         fileSystem: state.fileSystem,
         activeFileId: state.activeFileId,
         rawConfig: state.rawConfig,
         activeTab: state.activeTab,
         sidebarCollapsed: state.sidebarCollapsed,
-        isInitialized: state.isInitialized
-      })
+        isInitialized: state.isInitialized,
+        sidebarSizePct: state.sidebarSizePct,
+        expandedDirs: state.expandedDirs,
+      }),
     }
   )
-)
+);
 
 function getDefaultFileSystem(): FileSystemNode[] {
   return [
     {
-      id: '/etc/nginx',
-      name: 'nginx',
-      type: 'directory',
+      id: "/etc/nginx",
+      name: "nginx",
+      type: "directory",
       children: [
         {
-          id: '/etc/nginx/nginx.conf',
-          name: 'nginx.conf',
-          type: 'file',
-          content: '',
-          parentId: '/etc/nginx'
-        }
+          id: "/etc/nginx/nginx.conf",
+          name: "nginx.conf",
+          type: "file",
+          content: "",
+          parentId: "/etc/nginx",
+        },
       ],
-      parentId: undefined
-    }
-  ]
+      parentId: undefined,
+    },
+  ];
 }
