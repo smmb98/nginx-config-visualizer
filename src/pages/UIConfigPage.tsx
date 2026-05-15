@@ -1,4 +1,3 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
 
@@ -64,77 +63,73 @@ export function UIConfigPage() {
         <h2 className="text-headline-md text-on-surface">Per-Website Config</h2>
 
         {/* Site Selector */}
-        <div
-          className="w-full border-b-3 
-        border-outline-variant 
-        flex 
-        justify-center
-        overflow-x-auto"
-        >
-          {/* Site tabs */}
-          <Tabs defaultValue="example.com" className="-mb-px">
-            <TabsList variant="line">
+        <div className="w-full overflow-x-auto pb-2">
+          <div className="w-full border-b-3 border-outline-variant ">
+            <ul className="flex w-max mx-auto">
               {sites.map((site) => (
-                <TabsTrigger
+                <li
                   key={site}
-                  value={site}
-                  className="px-4 py-4! border-0
-                  border-b-3 border-transparent rounded-b-none
-                  text-body-md
+                  onClick={() => setActiveTab(site)}
+                  className={`
+                  cursor-pointer
+                  flex items-center gap-2
+                  px-4 py-3
+                  border-b-3
+                  whitespace-nowrap
                   transition-colors
-                  duration-150
-                  hover:text-primary/80! 
-                  hover:border-primary/70! 
-                  data-[state=active]:border-primary/90!
-                  data-[state=active]:text-primary!
-                   "
+                  ${
+                    activeTab === site
+                      ? "border-primary text-primary"
+                      : "border-transparent text-on-surface-variant hover:text-primary/80 hover:border-primary/70"
+                  }
+                `}
                 >
-                  <span>{site}</span>
-                  {/* Close Icon - Only show if more than 1 site exists */}
-                  {sites.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={(e) => closeSite(e, site)}
-                      className="
-                      flex items-center justify-center
-                      h-5 w-5
-                      rounded-full
-                      text-on-surface-variant
-                      opacity-50
-                      hover:opacity-100
-                      hover:text-accent-error
-                      hover:bg-accent-error/20 hover:border-accent-error/40 transition-all duration-150
-                    "
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                </TabsTrigger>
+                  {site}
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeSite(e, site);
+                    }}
+                    className="
+                    flex items-center justify-center
+                    h-5 w-5
+                    rounded-full
+                    opacity-50
+                    hover:opacity-100
+                    hover:text-red-500
+                    hover:bg-accent-error/20
+                    hover:border-accent-error/40 
+                    transition
+                    duration-150
+                  "
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </li>
               ))}
 
-              {/* Add Site Button */}
-              <button
-                onClick={addSite}
-                className="flex items-center gap-1 px-4 py-1 
-                whitespace-nowrap
-                shrink-0
-                min-w-max
-                border-b-3 border-transparent
-                text-on-surface-variant  
-                transition-colors 
-                duration-150
-                hover:text-primary 
-                hover:border-primary/90"
-              >
-                <Plus className="h-4 w-4" />
-                Add site
-              </button>
-            </TabsList>
-          </Tabs>
+              <li className="flex items-center px-4 py-3 whitespace-nowrap">
+                <button
+                  onClick={addSite}
+                  className="
+                  cursor-pointer
+                  flex items-center gap-1
+                  text-on-surface-variant
+                  hover:text-primary
+                  transition-colors
+                "
+                >
+                  <Plus className="h-4 w-4" />
+                  Add site
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Empty card */}
-        <div className="glass-panel rounded-xl p-6 min-h-[400px]" />
+        <div className="glass-panel rounded-xl p-6 min-h-100" />
       </div>
     </div>
   );
