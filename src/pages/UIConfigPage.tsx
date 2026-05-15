@@ -63,9 +63,9 @@ export function UIConfigPage() {
         <h2 className="text-headline-md text-on-surface">Per-Website Config</h2>
 
         {/* Site Selector */}
-        <div className="w-full overflow-x-auto pb-2">
-          <div className="w-full border-b-3 border-outline-variant ">
-            <ul className="flex w-max mx-auto">
+        <div className="w-full overflow-x-auto pb-6 -mb-px">
+          <div className="w-full border-b-3 border-outline-variant">
+            <ul className="flex w-max mx-auto relative top-0.75">
               {sites.map((site) => (
                 <li
                   key={site}
@@ -108,7 +108,6 @@ export function UIConfigPage() {
                   </button>
                 </li>
               ))}
-
               <li className="flex items-center px-4 py-3 whitespace-nowrap">
                 <button
                   onClick={addSite}
