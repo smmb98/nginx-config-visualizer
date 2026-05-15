@@ -43,10 +43,10 @@ export function Header() {
                 "inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-body-sm font-medium transition-all duration-150",
                 activeTab === tab.id
                   ? "bg-primary/10 text-primary border-b-2 border-primary/30"
-                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                  : "text-on-surface-variant hover:text-primary hover:border-primary/30 hover:bg-primary/20 hover:border-b-2",
               )}
             >
-              {tab.icon }
+              {tab.icon}
               <span>{tab.label}</span>
             </button>
           ))}
@@ -62,7 +62,7 @@ export function Header() {
           <button
             onClick={resetWorkspace}
             title="Back to home"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-body-sm text-on-surface-variant hover:text-accent-error hover:bg-accent-error/10 border border-transparent hover:border-accent-error/20 transition-all duration-200"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-body-sm text-accent-error bg-accent-error/10 border  border-accent-error/20 hover:bg-accent-error/20 hover:border-accent-error/40 transition-all duration-150"
           >
             {/* home / reset icon */}
             <svg
