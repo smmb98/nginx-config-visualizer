@@ -62,7 +62,7 @@ export function Header() {
           <button
             onClick={resetWorkspace}
             title="Back to home"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-body-sm text-accent-error bg-accent-error/10 border  border-accent-error/20 hover:bg-accent-error/20 hover:border-accent-error/40 transition-all duration-150"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-body-sm text-accent-error bg-accent-error/10 border  border-accent-error hover:bg-accent-error/20 transition-all duration-150"
           >
             {/* home / reset icon */}
             <svg

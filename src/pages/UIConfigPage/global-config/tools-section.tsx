@@ -38,13 +38,25 @@ export function ToolsSection() {
         </SectionRow>
         <SectionRow label="Reset configuration">
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="destructive" size="sm">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="text-accent-error bg-accent-error/10! border  border-accent-error hover:bg-accent-error/20! transition-all duration-150"
+            >
               Reset global config
             </Button>
-            <Button variant="destructive" size="sm">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="text-accent-error bg-accent-error/10! border  border-accent-error hover:bg-accent-error/20! transition-all duration-150"
+            >
               Reset all domains
             </Button>
-            <Button variant="destructive" size="sm">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="text-accent-error bg-accent-error/10! border  border-accent-error hover:bg-accent-error/20! transition-all duration-150"
+            >
               Remove all domains
             </Button>
           </div>

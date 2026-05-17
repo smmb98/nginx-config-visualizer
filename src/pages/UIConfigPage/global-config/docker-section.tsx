@@ -12,8 +12,12 @@ export function DockerSection() {
         <SectionRow label="Docker" align="top">
           <FieldGroup>
             <div className="flex items-center gap-3 pb-3">
-              <Button variant="default" size="sm">
-                Apply Docker tweaks
+              <Button
+                variant="default"
+                size="lg"
+                className="text-primary bg-primary/10! border  border-primary hover:bg-primary/20! transition-all duration-150"
+              >
+                Apply Docker Tweaks
               </Button>
               <span className="text-sm text-muted-foreground">
                 Apply configuration tweaks for running NGINX with Docker.
