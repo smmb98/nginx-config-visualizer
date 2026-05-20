@@ -85,6 +85,15 @@ export function SecuritySection() {
               Enable security.txt
             </Label>
           </div>
+          {/* Conditional security.txt path input - appears when security.txt is enabled */}
+          <div className="mt-2 ps-4">
+            <SectionRow
+              label="security.txt path"
+              tooltip="Path to the security.txt file relative to the web root"
+            >
+              <Input placeholder="/path/to/security.txt" />
+            </SectionRow>
+          </div>
         </SectionRow>
       </div>
     </div>

@@ -46,6 +46,67 @@ export function LoggingSection() {
             </Label>
           </div>
         </SectionRow>
+        <SectionRow
+          label="Cloudflare"
+          tooltip="Enable Cloudflare-specific logging headers"
+        >
+          <div className="flex items-center gap-2">
+            <Checkbox id="cloudflare-enabled" />
+            <Label htmlFor="cloudflare-enabled" className="text-sm">
+              Enable Cloudflare logging
+            </Label>
+          </div>
+          <div className="mt-2 ps-4 space-y-1">
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-cfray" defaultChecked />
+              <Label htmlFor="cloudflare-cfray" className="text-sm">
+                cfRay
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-cfconnectingip" defaultChecked />
+              <Label htmlFor="cloudflare-cfconnectingip" className="text-sm">
+                cfConnectingIp
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-xforwardedfor" />
+              <Label htmlFor="cloudflare-xforwardedfor" className="text-sm">
+                xForwardedFor
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-xforwardedproto" />
+              <Label htmlFor="cloudflare-xforwardedproto" className="text-sm">
+                xForwardedProto
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-trueclientip" />
+              <Label htmlFor="cloudflare-trueclientip" className="text-sm">
+                trueClientIp
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-cficountry" />
+              <Label htmlFor="cloudflare-cficountry" className="text-sm">
+                cfIpCountry
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-cfvisitor" />
+              <Label htmlFor="cloudflare-cfvisitor" className="text-sm">
+                cfVisitor
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="cloudflare-cdnloop" />
+              <Label htmlFor="cloudflare-cdnloop" className="text-sm">
+                cdnLoop
+              </Label>
+            </div>
+          </div>
+        </SectionRow>
       </div>
     </div>
   );

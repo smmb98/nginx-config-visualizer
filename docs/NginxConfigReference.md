@@ -5,8 +5,13 @@ This document serves as a comprehensive reference for the nginxconfig.io reposit
 ## Repository Overview
 
 **GitHub**: https://github.com/digitalocean/nginxconfig.io  
-**Tech Stack**: Vue.js, Bulma CSS, Prism.js  
+**Original Tech Stack**: Vue.js, Bulma CSS, Prism.js  
 **Purpose**: NGINX configuration generator with a visual UI
+
+## Your Current UI Implementation
+
+**Tech Stack**: React, TypeScript, Tailwind CSS, Radix UI  
+**Architecture**: Component-based with tab navigation
 
 ## Project Structure
 
@@ -260,3 +265,76 @@ npm run build   # Production build to dist/
 ## Referenced By
 
 This documentation is intended for the nginx-config-visualizer project's UI Config Page development.
+
+## Your UI Patterns (React/TSX)
+
+### Component Structure
+
+```
+src/pages/UIConfigPage/
+├── index.tsx                    # Main page container
+├── per-website-config/
+│   └── index.tsx               # Sites tab selector with add/remove
+└── global-config/
+    ├── index.tsx               # Tab navigation
+    ├── https-section.tsx       # SSL/TLS, Let's Encrypt
+    ├── security-section.tsx    # CSP, HSTS, rate limiting
+    ├── python-section.tsx      # uWSGI socket
+    ├── reverse-proxy-section.tsx  # Proxy timeouts, headers
+    ├── performance-section.tsx # Gzip, Brotli, caching
+    ├── logging-section.tsx     # Error logs, log levels
+    ├── nginx-section.tsx       # User, worker_processes, pid
+    ├── docker-section.tsx      # Dockerfile, docker-compose
+    └── tools-section.tsx       # Modular structure, presets
+```
+
+### Key Components
+
+**SectionRow** (`src/components/SectionRow.tsx`):
+- 4-column grid layout (1:3 label to content ratio)
+- Optional tooltip with Info icon
+- Used for all form rows
+
+**TabSelector** (`src/components/TabSelector.tsx`):
+- Tabbed navigation for sites
+- Add tab button support
+
+### UI Patterns
+
+1. **Glass Panel Cards**: `glass-panel rounded-xl p-6 min-h-100`
+2. **Section Headers**: `<h3 className="text-title-md mb-4">`
+3. **Input with Units**: Input + span for units
+4. **Checkbox Groups**: Checkbox + Label pattern
+5. **Select with Options**: Radix UI Select components
+
+### Section Coverage Matrix
+
+| nginxconfig.io Section | Your Status | Notes |
+|------------------------|-------------|-------|
+| HTTPS | ✅ Partially | SSL profile missing, OCSP resolvers |
+| Security | ✅ Complete | CSP, Referrer-Policy, HSTS |
+| Python | ✅ Minimal | Just socket path |
+| Reverse Proxy | ✅ Partial | Timeouts, X-Forwarded-* handling |
+| Performance | ✅ Complete | Gzip, Brotli, caching |
+| Logging | ✅ Partial | Error log, levels |
+| NGINX | ✅ Complete | User, workers, pid, body size |
+| Docker | ✅ Complete | Dockerfile, docker-compose toggle |
+| Tools | ✅ Complete | Modular, share link, reset buttons |
+
+### Missing Features from Original
+
+Per-domain sections not yet implemented:
+- Server (domain, root, index)
+- HTTPS (cert type, HTTP/2)
+- PHP (PHP-FPM, WordPress, Drupal)
+- Routing (fallback routes)
+- Restrict (access control)
+- Onion (Tor hidden services)
+
+### Color System
+
+Using Tailwind with custom colors:
+- `text-on-surface` / `text-on-surface-variant` for text
+- `text-muted-foreground` for secondary text
+- `glass-panel` for card backgrounds
+- `border-primary` / `border-accent-error` for borders

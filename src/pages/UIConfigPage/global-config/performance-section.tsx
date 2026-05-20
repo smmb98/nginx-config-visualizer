@@ -40,6 +40,11 @@ export function PerformanceSection() {
               Enable Brotli compression
             </Label>
           </div>
+          <div className="mt-2 ps-4">
+            <p className="text-xs text-warning">
+              Note: Requires <a href="https://github.com/google/ngx_brotli" target="_blank" rel="noopener noreferrer" className="underline">ngx_brotli module</a> to be installed with NGINX.
+            </p>
+          </div>
         </SectionRow>
         <SectionRow
           label="Expiration for assets"

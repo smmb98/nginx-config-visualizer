@@ -14,7 +14,7 @@ export function ReverseProxySection() {
         >
           <div className="flex items-center gap-2">
             <Input type="number" min={0} placeholder="60" className="w-28" />
-            <span className="text-sm text-muted-foreground">seconds</span>
+            <span className="text-sm text-muted-foreground">s</span>
           </div>
         </SectionRow>
         <SectionRow
@@ -23,7 +23,7 @@ export function ReverseProxySection() {
         >
           <div className="flex items-center gap-2">
             <Input type="number" min={0} placeholder="60" className="w-28" />
-            <span className="text-sm text-muted-foreground">seconds</span>
+            <span className="text-sm text-muted-foreground">s</span>
           </div>
         </SectionRow>
         <SectionRow
@@ -32,7 +32,7 @@ export function ReverseProxySection() {
         >
           <div className="flex items-center gap-2">
             <Input type="number" min={0} placeholder="60" className="w-28" />
-            <span className="text-sm text-muted-foreground">seconds</span>
+            <span className="text-sm text-muted-foreground">s</span>
           </div>
         </SectionRow>
         <SectionRow
