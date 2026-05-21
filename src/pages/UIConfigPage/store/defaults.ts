@@ -1,5 +1,52 @@
 import type { GlobalConfigState } from "./types";
 
+const DEFAULT_SITE = {
+  id: "site-1",
+  domain: "example.com",
+  root: "/var/www/example.com/html",
+  index: "index.html index.php",
+  https: {
+    certType: "none" as const,
+    http2: false,
+    forceHttps: false,
+    wwwRedirect: false,
+    hsts: false,
+  },
+  php: {
+    enabled: false,
+    wordpress: false,
+    drupal: false,
+    magento: false,
+    joomla: false,
+  },
+  python: {
+    django: false,
+    gunicornSocket: "unix:/run/gunicorn.sock",
+  },
+  reverseProxy: {
+    proxyPass: "",
+    websockets: false,
+    xForwardedProto: false,
+    xForwardedHost: false,
+  },
+  routing: {
+    fallbackRoute: "",
+  },
+  logging: {
+    accessLogPath: "/var/log/nginx/example.com.access.log",
+    errorLogPath: "/var/log/nginx/example.com.error.log",
+  },
+  restrict: {
+    allowList: "",
+    denyList: "",
+    basicAuth: false,
+  },
+  onion: {
+    enabled: false,
+    location: "",
+  },
+};
+
 export const DEFAULT_STATE: GlobalConfigState = {
   // HTTPS section
   reuseport: false,
@@ -76,4 +123,7 @@ export const DEFAULT_STATE: GlobalConfigState = {
   // Tools section
   modularizedStructure: false,
   symlinkVhost: false,
+
+  // Sites configuration
+  sites: [DEFAULT_SITE],
 };

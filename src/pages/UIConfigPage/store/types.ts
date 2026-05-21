@@ -1,3 +1,66 @@
+export interface SiteHttpsConfig {
+  certType: "none" | "self-signed" | "letsencrypt";
+  http2: boolean;
+  forceHttps: boolean;
+  wwwRedirect: boolean;
+  hsts: boolean;
+}
+
+export interface SitePhpConfig {
+  enabled: boolean;
+  wordpress: boolean;
+  drupal: boolean;
+  magento: boolean;
+  joomla: boolean;
+}
+
+export interface SitePythonConfig {
+  django: boolean;
+  gunicornSocket: string;
+}
+
+export interface SiteReverseProxyConfig {
+  proxyPass: string;
+  websockets: boolean;
+  xForwardedProto: boolean;
+  xForwardedHost: boolean;
+}
+
+export interface SiteRoutingConfig {
+  fallbackRoute: string;
+}
+
+export interface SiteLoggingConfig {
+  accessLogPath: string;
+  errorLogPath: string;
+}
+
+export interface SiteRestrictConfig {
+  allowList: string;
+  denyList: string;
+  basicAuth: boolean;
+}
+
+export interface SiteOnionConfig {
+  enabled: boolean;
+  location: string;
+}
+
+export interface Site {
+  id: string;
+  domain: string;
+  root: string;
+  index: string;
+  https: SiteHttpsConfig;
+  php: SitePhpConfig;
+  python: SitePythonConfig;
+  reverseProxy: SiteReverseProxyConfig;
+  routing: SiteRoutingConfig;
+  logging: SiteLoggingConfig;
+  restrict: SiteRestrictConfig;
+  onion: SiteOnionConfig;
+}
+
 export interface GlobalConfigState {
   // HTTPS section
   reuseport: boolean;
@@ -74,6 +137,9 @@ export interface GlobalConfigState {
   // Tools section
   modularizedStructure: boolean;
   symlinkVhost: boolean;
+
+  // Sites configuration
+  sites: Site[];
 }
 
 export interface GlobalConfigActions {
@@ -82,4 +148,11 @@ export interface GlobalConfigActions {
     value: string | number | boolean | unknown,
   ) => void;
   resetToDefaults: () => void;
+  addSite: (site?: Partial<Site>) => void;
+  removeSite: (siteId: string) => void;
+  updateSiteField: (
+    siteId: string,
+    field: keyof Site | string,
+    value: string | number | boolean | unknown,
+  ) => void;
 }
