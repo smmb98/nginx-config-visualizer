@@ -29,8 +29,19 @@ export function PerWebsiteConfigSection() {
   const addSite = useGlobalConfigStore((s) => s.addSite);
   const removeSite = useGlobalConfigStore((s) => s.removeSite);
 
-  const activeTab = useMemo(() => sites[0]?.id ?? "", [sites]);
-  const activeSite = useMemo(() => sites.find((s) => s.id === activeTab), [sites, activeTab]);
+  const [activeTab, setActiveTab] = useState<string>(() => sites[0]?.id ?? "");
+
+  // Keep activeTab synced with sites array
+  const effectiveActiveTab = useMemo(() => {
+    if (sites.length === 0) return "";
+    if (sites.find((s) => s.id === activeTab)) return activeTab;
+    return sites[sites.length - 1].id;
+  }, [sites, activeTab]);
+
+  const activeSite = useMemo(
+    () => sites.find((s) => s.id === effectiveActiveTab),
+    [sites, effectiveActiveTab],
+  );
 
   const getNextDomain = useCallback(
     (domainList: typeof sites, base: string) => {
@@ -58,6 +69,10 @@ export function PerWebsiteConfigSection() {
     const newDomain = getNextDomain(sites, "example.com");
     addSite({ domain: newDomain });
   }, [sites, addSite, getNextDomain]);
+
+  const handleTabChange = useCallback((newTab: string) => {
+    setActiveTab(newTab);
+  }, []);
 
   const handleCloseSite = useCallback(
     (e: MouseEvent, siteId: string) => {
@@ -100,8 +115,8 @@ export function PerWebsiteConfigSection() {
 
       <TabSelector
         tabs={sites.map((s) => ({ key: s.id, label: s.domain }))}
-        activeTab={activeTab}
-        onTabChange={() => {}}
+        activeTab={effectiveActiveTab}
+        onTabChange={handleTabChange}
         onAddTab={handleAddSite}
         addLabel="Add site"
         showAddButton
