@@ -2,8 +2,32 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { SectionRow } from "@/components/SectionRow";
+import { useGlobalConfigStore } from "../store";
 
 export function PerformanceSection() {
+  const updateField = useGlobalConfigStore((s) => s.updateField);
+  const disableHtmlCaching = useGlobalConfigStore(
+    (s) => s.disableHtmlCaching,
+  ) as boolean;
+  const gzipCompression = useGlobalConfigStore(
+    (s) => s.gzipCompression,
+  ) as boolean;
+  const brotliCompression = useGlobalConfigStore(
+    (s) => s.brotliCompression,
+  ) as boolean;
+  const assetsExpiration = useGlobalConfigStore(
+    (s) => s.assetsExpiration,
+  ) as string;
+  const mediaExpiration = useGlobalConfigStore(
+    (s) => s.mediaExpiration,
+  ) as string;
+  const svgExpiration = useGlobalConfigStore(
+    (s) => s.svgExpiration,
+  ) as string;
+  const fontsExpiration = useGlobalConfigStore(
+    (s) => s.fontsExpiration,
+  ) as string;
+
   return (
     <div className="mt-6">
       <h3 className="text-title-md mb-4">Performance Configuration</h3>
@@ -13,7 +37,13 @@ export function PerformanceSection() {
           tooltip="Disables the sending of the ETag and Last-Modified headers for HTML files, preventing browser caching."
         >
           <div className="flex items-center gap-2">
-            <Checkbox id="disable-html-caching" />
+            <Checkbox
+              id="disable-html-caching"
+              checked={disableHtmlCaching}
+              onCheckedChange={(v) =>
+                updateField("disableHtmlCaching", v)
+              }
+            />
             <Label htmlFor="disable-html-caching" className="text-sm">
               Disable HTML caching
             </Label>
@@ -24,7 +54,13 @@ export function PerformanceSection() {
           tooltip="Enables gzip compression to reduce the size of transmitted data for text-based assets."
         >
           <div className="flex items-center gap-2">
-            <Checkbox id="gzip-compression" defaultChecked />
+            <Checkbox
+              id="gzip-compression"
+              checked={gzipCompression}
+              onCheckedChange={(v) =>
+                updateField("gzipCompression", v)
+              }
+            />
             <Label htmlFor="gzip-compression" className="text-sm">
               Enable gzip compression
             </Label>
@@ -35,14 +71,29 @@ export function PerformanceSection() {
           tooltip="Enables Brotli compression. Brotli is a newer, more efficient lossless compression algorithm."
         >
           <div className="flex items-center gap-2">
-            <Checkbox id="brotli-compression" />
+            <Checkbox
+              id="brotli-compression"
+              checked={brotliCompression}
+              onCheckedChange={(v) =>
+                updateField("brotliCompression", v)
+              }
+            />
             <Label htmlFor="brotli-compression" className="text-sm">
               Enable Brotli compression
             </Label>
           </div>
           <div className="mt-2 ps-4">
             <p className="text-xs text-warning">
-              Note: Requires <a href="https://github.com/google/ngx_brotli" target="_blank" rel="noopener noreferrer" className="underline">ngx_brotli module</a> to be installed with NGINX.
+              Note: Requires{" "}
+              <a
+                href="https://github.com/google/ngx_brotli"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                ngx_brotli module
+              </a>{" "}
+              to be installed with NGINX.
             </p>
           </div>
         </SectionRow>
@@ -50,25 +101,53 @@ export function PerformanceSection() {
           label="Expiration for assets"
           tooltip="Set the Cache-Control max-age for JS and CSS assets (e.g. 7d for 7 days)."
         >
-          <Input placeholder="7d" className="w-32" />
+          <Input
+            value={assetsExpiration}
+            onChange={(e) =>
+              updateField("assetsExpiration", e.target.value)
+            }
+            placeholder="7d"
+            className="w-32"
+          />
         </SectionRow>
         <SectionRow
           label="Expiration for media"
           tooltip="Set the Cache-Control max-age for image and media files (e.g. 7d for 7 days)."
         >
-          <Input placeholder="7d" className="w-32" />
+          <Input
+            value={mediaExpiration}
+            onChange={(e) =>
+              updateField("mediaExpiration", e.target.value)
+            }
+            placeholder="7d"
+            className="w-32"
+          />
         </SectionRow>
         <SectionRow
           label="Expiration for SVGs"
           tooltip="Set the Cache-Control max-age for SVG files (e.g. 7d for 7 days)."
         >
-          <Input placeholder="7d" className="w-32" />
+          <Input
+            value={svgExpiration}
+            onChange={(e) =>
+              updateField("svgExpiration", e.target.value)
+            }
+            placeholder="7d"
+            className="w-32"
+          />
         </SectionRow>
         <SectionRow
           label="Expiration for fonts"
           tooltip="Set the Cache-Control max-age for font files (e.g. 7d for 7 days)."
         >
-          <Input placeholder="7d" className="w-32" />
+          <Input
+            value={fontsExpiration}
+            onChange={(e) =>
+              updateField("fontsExpiration", e.target.value)
+            }
+            placeholder="7d"
+            className="w-32"
+          />
         </SectionRow>
       </div>
     </div>

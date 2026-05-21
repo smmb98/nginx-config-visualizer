@@ -3,8 +3,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SectionRow } from "@/components/SectionRow";
+import { useGlobalConfigStore } from "../store";
 
 export function DockerSection() {
+  const updateField = useGlobalConfigStore((s) => s.updateField);
+  const dockerTweaks = useGlobalConfigStore(
+    (s) => s.dockerTweaks,
+  ) as boolean;
+  const dockerfile = useGlobalConfigStore((s) => s.dockerfile) as boolean;
+  const dockerCompose = useGlobalConfigStore(
+    (s) => s.dockerCompose,
+  ) as boolean;
+
   return (
     <div className="mt-6">
       <h3 className="text-title-md mb-4">Docker Configuration</h3>
@@ -16,6 +26,7 @@ export function DockerSection() {
                 variant="default"
                 size="lg"
                 className="text-primary bg-primary/10! border  border-primary hover:bg-primary/20! transition-all duration-150"
+                onClick={() => updateField("dockerTweaks", !dockerTweaks)}
               >
                 Apply Docker Tweaks
               </Button>
@@ -33,7 +44,13 @@ export function DockerSection() {
         </SectionRow>
         <SectionRow label="Dockerfile">
           <div className="flex items-center gap-2">
-            <Checkbox id="dockerfile" />
+            <Checkbox
+              id="dockerfile"
+              checked={dockerfile}
+              onCheckedChange={(v) =>
+                updateField("dockerfile", v)
+              }
+            />
             <Label htmlFor="dockerfile" className="text-sm">
               Include Dockerfile to run NGINX with Docker
             </Label>
@@ -41,7 +58,13 @@ export function DockerSection() {
         </SectionRow>
         <SectionRow label="Docker Compose">
           <div className="flex items-center gap-2">
-            <Checkbox id="docker-compose" />
+            <Checkbox
+              id="docker-compose"
+              checked={dockerCompose}
+              onCheckedChange={(v) =>
+                updateField("dockerCompose", v)
+              }
+            />
             <Label htmlFor="docker-compose" className="text-sm">
               Include docker-compose to run NGINX with docker-compose
             </Label>
