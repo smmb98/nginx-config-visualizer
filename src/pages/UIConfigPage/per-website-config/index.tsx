@@ -49,7 +49,7 @@ export function PerWebsiteConfigSection() {
 
       const usedNumbers = domainList
         .map((site) => {
-          const match = site.domain.match(regex);
+          const match = site.server.domain.match(regex);
           if (!match) return 0;
           return match[2] ? Number(match[2]) : 0;
         })
@@ -114,7 +114,7 @@ export function PerWebsiteConfigSection() {
       <h2 className="text-headline-md text-on-surface">Per-Website Config</h2>
 
       <TabSelector
-        tabs={sites.map((s) => ({ key: s.id, label: s.domain }))}
+        tabs={sites.map((s) => ({ key: s.id, label: s.server.domain }))}
         activeTab={effectiveActiveTab}
         onTabChange={handleTabChange}
         onAddTab={handleAddSite}

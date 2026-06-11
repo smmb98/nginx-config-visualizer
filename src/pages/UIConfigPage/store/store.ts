@@ -22,49 +22,17 @@ export const useGlobalConfigStore = create<GlobalConfigStore>((set) => ({
     set((state) => {
       const newSite: Site = {
         id: generateSiteId(),
-        domain: site?.domain || "example.com",
-        root: site?.root || "/var/www/example.com/html",
-        index: site?.index || "index.html index.php",
-        https: site?.https || {
-          certType: "none",
-          http2: false,
-          forceHttps: false,
-          wwwRedirect: false,
-          hsts: false,
-        },
-        php: site?.php || {
-          enabled: false,
-          wordpress: false,
-          drupal: false,
-          magento: false,
-          joomla: false,
-        },
-        python: site?.python || {
-          django: false,
-          gunicornSocket: "unix:/run/gunicorn.sock",
-        },
-        reverseProxy: site?.reverseProxy || {
-          proxyPass: "",
-          websockets: false,
-          xForwardedProto: false,
-          xForwardedHost: false,
-        },
-        routing: site?.routing || {
-          fallbackRoute: "",
-        },
-        logging: site?.logging || {
-          accessLogPath: "/var/log/nginx/example.com.access.log",
-          errorLogPath: "/var/log/nginx/example.com.error.log",
-        },
-        restrict: site?.restrict || {
-          allowList: "",
-          denyList: "",
-          basicAuth: false,
-        },
-        onion: site?.onion || {
-          enabled: false,
-          location: "",
-        },
+        server: site?.server ?? DEFAULT_STATE.sites[0].server,
+        https: site?.https ?? DEFAULT_STATE.sites[0].https,
+        php: site?.php ?? DEFAULT_STATE.sites[0].php,
+        python: site?.python ?? DEFAULT_STATE.sites[0].python,
+        reverseProxy: site?.reverseProxy ?? DEFAULT_STATE.sites[0].reverseProxy,
+        routing: site?.routing ?? DEFAULT_STATE.sites[0].routing,
+        logging: site?.logging ?? DEFAULT_STATE.sites[0].logging,
+        restrict: site?.restrict ?? DEFAULT_STATE.sites[0].restrict,
+        onion: site?.onion ?? DEFAULT_STATE.sites[0].onion,
+        // Override domain if provided
+        ...(site?.domain && { server: { ...newSite.server, domain: site.domain } }),
       };
       return { sites: [...state.sites, newSite] };
     }),

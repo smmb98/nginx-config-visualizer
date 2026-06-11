@@ -1,9 +1,8 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { SectionRow } from "@/components/SectionRow";
 import { useGlobalConfigStore } from "../store";
 import type { Site } from "../store/types";
+import { Label } from "@/components/ui/label";
 
 interface PythonSectionProps {
   site: Site;
@@ -18,30 +17,38 @@ export function PythonSection({ site }: PythonSectionProps) {
       <h3 className="text-title-md mb-4">Python Configuration</h3>
       <div className="space-y-4">
         <SectionRow
-          label="Django"
-          tooltip="Enable Django configuration for this site."
+          label="Python"
+          tooltip="Enable Python/Django configuration for this site."
         >
           <div className="flex items-center gap-2">
             <Checkbox
-              id={`django-${site.id}`}
-              checked={python.django}
-              onCheckedChange={(v) => updateSiteField(site.id, "python.django", v)}
+              id={`python-enabled-${site.id}`}
+              checked={python.python}
+              onCheckedChange={(v) => updateSiteField(site.id, "python.python", v)}
             />
-            <Label htmlFor={`django-${site.id}`} className="text-sm">
-              Enable Django
+            <Label htmlFor={`python-enabled-${site.id}`} className="text-sm">
+              Enable Python
             </Label>
           </div>
         </SectionRow>
-        <SectionRow
-          label="Gunicorn socket"
-          tooltip="Unix socket path for Gunicorn WSGI server."
-        >
-          <Input
-            value={python.gunicornSocket}
-            onChange={(e) => updateSiteField(site.id, "python.gunicornSocket", e.target.value)}
-            placeholder="unix:/run/gunicorn.sock"
-          />
-        </SectionRow>
+        
+        {python.python && (
+          <SectionRow
+            label="Django"
+            tooltip="Enable Django preset for Python configuration."
+          >
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id={`django-${site.id}`}
+                checked={python.djangoRules}
+                onCheckedChange={(v) => updateSiteField(site.id, "python.djangoRules", v)}
+              />
+              <Label htmlFor={`django-${site.id}`} className="text-sm">
+                Django preset
+              </Label>
+            </div>
+          </SectionRow>
+        )}
       </div>
     </div>
   );
