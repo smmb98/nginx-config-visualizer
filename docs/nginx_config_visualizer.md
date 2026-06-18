@@ -6,109 +6,264 @@ Below is the **Software Requirements Specification (SRS)** designed to position 
 
 # **Software Requirements Specification (SRS)**
 
-## **Project: Nginx Config Visualizer & Intelligent Auditor (The "Top-Up" Edition)**
+## **Project: Nginx Config Visualizer & Intelligent Auditor**
 
-### **1\. Introduction**
+### **1. Introduction**
 
-The goal is to create a web-based, client-side Nginx configuration management tool that surpasses existing market leaders by combining **generation, reverse-engineering (parsing), and visual logic auditing.**
+The goal is to create a web-based, client-side Nginx configuration management tool that surpasses existing market leaders by combining **generation, reverse-engineering (parsing), and visual logic auditing** through a sophisticated multi-tab interface.
 
-### **2\. Competitive Analysis (The "Top-Up" Strategy)**
+---
 
-We will benchmark against the following to ensure 100% feature parity \+ unique value:
+### **2. Competitive Analysis (The "Top-Up" Strategy)**
+
+We will benchmark against the following to ensure 100% feature parity + unique value:
 
 | Feature                         | DigitalOcean | Nginx Proxy Manager | Serverion | Our Application                   |
 | :------------------------------ | :----------- | :------------------ | :-------- | :-------------------------------- |
-| **Config Generation**           | ✅ Yes       | ✅ Yes              | ✅ Yes    | ✅ **Superior (more presets)**    |
-| **Upload/Parse Existing File**  | ❌ No        | ❌ No               | ❌ No     | ✅ **Yes (The Killer Feature)**   |
+| **Config Generation**           | ✅ Yes       | ✅ Yes              | ✅ Yes    | ✅ **Superior (4-tab architecture)** |
+| **Upload/Parse Existing File**  | ❌ No        | ❌ No               | ❌ No     | ✅ **Yes (Multi-file + Include support)** |
 | **Visual Flow Mapping**         | ❌ No        | ❌ No               | ❌ No     | ✅ **Yes (Interactive Diagrams)** |
-| **Real-time Syntax Validation** | ❌ No        | ❌ No               | ❌ No     | ✅ **Yes (Monaco/Ace Editor)**    |
+| **Real-time Syntax Validation** | ❌ No        | ❌ No               | ❌ No     | ✅ **Yes (Monaco Editor)**        |
 | **Security Scoring**            | ⚠️ Partial   | ⚠️ Partial          | ❌ No     | ✅ **Yes (Real-time Auditor)**    |
-| **Helper/Educational Text**     | ⚠️ Minimal   | ❌ No               | ❌ No     | ✅ **Yes (Contextual Sidebar)**   |
+| **Helper/Educational Text**     | ⚠️ Minimal   | ❌ No               | ❌ No     | ✅ **Yes (Contextual Intelligence)** |
 | **No-Database/Pure Client**     | ✅ Yes       | ❌ No (Needs DB)    | ✅ Yes    | ✅ **Yes (Private & Fast)**       |
 
 ---
 
-### **3\. Functional Requirements**
+### **3. Core Layout & Navigation Architecture**
 
-#### **3.1 Input & Parsing Engine**
+#### **3.1 Header - 4-Tab Navigation System**
+The header implements a primary navigation with four distinct modes:
 
-- **File Upload/Drag-and-Drop:** Accept .conf files and parse them into a UI-state object.
-- **Reverse Mapping:** If a user uploads a config with gzip on;, the UI toggle for Gzip must automatically switch to "On."
-- **Multi-file Support:** Capability to "include" files and visualize how they merge into the main config.
+1. **UI Configuration** - High-level, form-based interface for non-technical users to configure Nginx directives through toggleable options and input fields.
+2. **Code Configuration** - Professional-grade Monaco Editor with Nginx-specific syntax highlighting for direct configuration editing.
+3. **Visual Configuration** - Graphical node-based editor showing server blocks, location directives, and upstream relationships as an interactive flow diagram.
+4. **Analytics/Intelligent Auditor** - Dashboard displaying security audit results, syntax validation feedback, performance metrics, and optimization recommendations.
 
-#### **3.2 The Generator (The DO+ Suite)**
+#### **3.2 Main Workspace Layout**
+A two-pane layout optimized for configuration management:
 
-- **Stack Support:** PHP (8.x support), Python (Django/Flask), Node.js, Ruby, Go, and Static.
-- **SSL/TLS:** Support for Certbot, custom certs, Mozilla SSL profiles (Modern, Intermediate, Old).
-- **Docker Toggle:** Automatically switch paths (e.g., /var/www/html vs Docker volumes) and upstream names.
+- **Left Pane - File Tree (Collapsible):** Hierarchical display of the virtual Nginx file system structure including:
+  - `/etc/nginx/` root directory
+  - `sites-available/` and `sites-enabled/` directories
+  - `conf.d/` for modular configurations
+  - `ssl/` for certificate storage
+  - Support for nested folder structures and include directives
 
-#### **3.3 Visual & Logic Auditing**
+- **Right Pane - Dynamic Main Content Area:** Context-aware content that changes based on:
+  - Active navigation tab (UI/Code/Visual/Analytics)
+  - Selected file from the file tree
+  - Zoom/focus state
 
-- **The Logic Map:** A visual flowchart showing the path of a request.
-- **Security Auditor:** Automatic alerts for missing headers (HSTS, CSP, XSS-Protection).
-- **Invalid Config Alerts:** Highlight "Shadowed" locations (where one location block makes another unreachable).
-
-#### **3.4 Education & UX**
-
-- **The "Consultant" Sidebar:** A persistent panel that updates based on the focused input.
-- **Natural Language Summary:** "Your server will listen on port 80 and redirect all traffic to encrypted port 443."
-- **The "Go Live" Checklist:** A generated list of terminal commands to run (e.g., nginx \-t, systemctl reload nginx).
+#### **3.3 Footer - Status & Monetization Bar**
+A persistent footer containing:
+- System status logs (Syntax: Valid/Invalid, Security: Score)
+- Version indicator
+- Monetization components:
+  - Donate button (Buy Me a Coffee/Patreon)
+  - Sponsored link (minimal, non-obstructive)
+  - Documentation/Changelog links
 
 ---
 
-### **4\. Non-Functional Requirements**
+### **4. State Management & Routing**
+
+#### **4.1 Zustand State Management**
+Centralized state store handling:
+
+```typescript
+interface ConfigState {
+  // File System State
+  fileSystem: FileSystemNode[];
+  activeFileId: string | null;
+  
+  // Configuration State
+  rawConfig: string; // Current file content
+  parsedConfig: NginxConfig | null;
+  
+  // UI State
+  activeTab: 'ui' | 'code' | 'visual' | 'analytics';
+  sidebarCollapsed: boolean;
+  
+  // Parse Results
+  syntaxErrors: SyntaxError[];
+  securityAudits: SecurityAuditResult[];
+  healthScore: number;
+  
+  // Actions
+  importFiles: (files: FileList) => void;
+  selectFile: (fileId: string) => void;
+  updateConfig: (content: string) => void;
+  switchTab: (tab: TabType) => void;
+  resetWorkspace: () => void; // Clears all state and returns to landing page
+}
+```
+
+#### **4.2 Conditional Access Control**
+- **Landing Page** serves as the entry point
+- Users must select either:
+  1. **Create New Config** - Initializes with default nginx.conf template
+  2. **Import Existing Config** - Uploads existing configuration files
+- All workspace features remain disabled until a configuration context is established
+- Route protection prevents access to `/app/*` routes without initialized state
+
+---
+
+### **5. Domain-Specific Logic (Nginx & File System)**
+
+#### **5.1 Nginx Directory Structure Support**
+The virtual file system must model standard Nginx configurations:
+
+```
+/etc/nginx/
+├── nginx.conf              # Main configuration
+├── mime.types              # MIME type definitions
+├── fastcgi_params          # FastCGI parameters
+├── sites-available/        # Available site configurations
+│   ├── default
+│   ├── example.com.conf
+│   └── api.example.com.conf
+├── sites-enabled/          # Symlinked active sites
+│   ├── default -> ../sites-available/default
+│   └── example.com.conf -> ../sites-available/example.com.conf
+├── conf.d/                 # Additional configurations
+│   ├── ssl.inc
+│   └── proxy.inc
+├── ssl/                    # SSL certificates
+│   ├── cert.pem
+│   └── key.pem
+└── snippets/               # Reusable configuration snippets
+    ├── headers.conf
+    └── ssl-params.conf
+```
+
+#### **5.2 Multi-File Include Support**
+- Parse `include` directives to establish file relationships
+- Visualize include hierarchy in the file tree
+- Support nested includes (up to 3 levels deep)
+- Merge included content for analytics overview
+
+#### **5.3 Export Engine**
+- Aggregate entire virtual file system into structured `.zip` archive
+- Preserve directory structure
+- Include generated `nginx.conf` with resolved include paths
+- Provide download link with proper MIME type
+
+---
+
+### **6. Functional Requirements by Tab**
+
+#### **6.1 UI Configuration Tab**
+- Form-based interface with categorized sections:
+  - **Global Settings:** worker_processes, worker_connections, error_log
+  - **Site Settings:** listen ports, server_name, root, index
+  - **Security Settings:** SSL/TLS options, security headers, rate limiting
+  - **Performance Settings:** gzip, caching, buffering
+  - **Reverse Proxy:** upstream definitions, proxy_pass, load balancing
+- Live preview of generated configuration
+- Toggle-based directive management (reverse mapping from parsed configs)
+
+#### **6.2 Code Configuration Tab**
+- Monaco Editor integration with:
+  - Nginx-specific syntax highlighting
+  - Real-time syntax validation with error markers
+  - Auto-completion for directives
+  - Code folding for block structures
+  - Line numbers and minimap
+- Bi-directional sync with file tree selection
+- Quick-fix suggestions for common errors
+
+#### **6.3 Visual Configuration Tab**
+- ReactFlow canvas rendering:
+  - **Server Block Nodes:** Represent server { } blocks
+  - **Location Nodes:** Child nodes within server blocks
+  - **Upstream Nodes:** Separate visualization for upstream groups
+  - **Edge Connections:** Arrows showing request flow/proxy relationships
+- Interactive features:
+  - Click-to-highlight code synchronization
+  - Node selection for property editing
+  - Zoom and pan capabilities
+  - Fit-to-screen and focus modes
+
+#### **6.4 Analytics/Intelligent Auditor Tab**
+- **Security Dashboard:**
+  - Health Score Gauge (0-100)
+  - Missing security headers detection (HSTS, CSP, X-Frame-Options)
+  - SSL/TLS configuration analysis
+  - Weak cipher suite warnings
+  - Shadowed location block detection
+
+- **Syntax Validation:**
+  - Real-time error reporting
+  - Warning system for deprecated directives
+  - Configuration best practices suggestions
+
+- **Performance Metrics:**
+  - Estimated memory usage
+  - Connection handling capacity
+  - Caching efficiency analysis
+
+- **Natural Language Summary:**
+  - Human-readable explanation of configuration purpose
+  - Plain English description of server behavior
+
+---
+
+### **7. Non-Functional Requirements**
 
 - **Privacy:** 100% Client-side. No configuration data is sent to a server.
-- **Performance:** The UI must remain responsive with configs up to 2,000 lines.
+- **Performance:** The UI must remain responsive with configs up to 2,000 lines. Web Workers handle parsing.
 - **Scannability:** No "Wall of Text." Use grouped accordions and clear typography.
+- **Browser Support:** Modern browsers (Chrome 90+, Firefox 88+, Safari 14+)
 
 ---
 
-### **5\. Technical Stack (Suggested)**
+### **8. Technical Stack**
 
-- **Framework:** React or Vue.js (for reactive state management).
-- **Editor:** Monaco Editor (The engine behind VS Code) for the code view.
-- **Parsing:** A Javascript-based Nginx parser (custom or nginx-config-parser).
-- **Visuals:** React Flow or D3.js for the Logic Map.
-- **Styling:** Tailwind CSS (for a clean, modern, "Developer-centric" look).
-
----
-
-### **6\. User Interface Blueprint**
-
-1. **Header:** Health Score Gauge (0-100) | Search Bar (Search settings) | Upload/Download buttons.
-2. **Left Rail (Input):** Categorized tabs:
-   - _Global:_ (User, Workers, PID).
-   - _Sites:_ (Domains, Root, Index).
-   - _Security:_ (SSL, Headers, Rate Limits).
-   - _Advanced:_ (Logging, Caching, Reverse Proxy).
-3. **Center (The Code):** Interactive Monaco Editor.
-4. **Right Rail (The Intelligence):**
-   - _Top:_ Logic Map (The "Request Path" visualization).
-   - _Middle:_ Security Suggestions (Red/Yellow/Green alerts).
-   - _Bottom:_ Helper Text (Detailed explanation of the current directive).
+- **Framework:** React 19 + TypeScript
+- **State Management:** Zustand
+- **Editor:** Monaco Editor (@monaco-editor/react)
+- **Visualization:** ReactFlow (reactflow)
+- **Styling:** Tailwind CSS with custom dark theme
+- **UI Components:** shadcn/ui + Radix UI primitives
+- **Parsing:** nginx-config-parser (browser-compatible)
+- **Export:** JSZip for archive generation
+- **Routing:** React Router (for tab/navigation state)
 
 ---
 
-### **7\. Monetization Strategy (Low-Intrusion)**
+### **9. User Interface Blueprint**
 
-- **Affiliate Recommendations:** A small "Recommended Hosting" section in the "Go Live" checklist (DigitalOcean/Vultr/Linode).
-- **Native Sponsorship:** A single, non-obstructive sidebar link for developer tools (e.g., Sentry, Postman).
-- **Advertisements:** A single, non-obstructive component where the ads will live
-- **Donations:** A single, non-obstructive button for donations like buy me a coffee or patreon or similar.
+#### **9.1 Landing Page**
+- **Entry Point:** The landing page is the only accessible route on application load
+- **Actions:**
+  - **Create New Config:** Initializes the workspace with a default nginx.conf template
+  - **Import Existing Config:** Opens file picker for uploading .conf files
+- **Design:** Drag-and-drop zone with sample config preview
 
-These are the competitions that we need to top up our app and ensure we are above them:
+#### **9.2 Workspace Layout**
+1. **Header:** Logo | Tab Navigation (UI | Code | Visual | Analytics) | Reset Button | Upload/Download buttons
+2. **Left Rail (File Tree):** Collapsible file explorer showing virtual nginx directory structure
+3. **Main Content Area:** Dynamic content based on active tab
+   - UI Tab: Form-based configuration panels
+   - Code Tab: Monaco Editor with syntax highlighting
+   - Visual Tab: ReactFlow canvas with node visualization
+   - Analytics Tab: Dashboard with security/health metrics
+4. **Right Rail (Optional):** Context-aware helper panel
+5. **Footer:** Status bar with Syntax/Health indicators and monetization links
 
-### **8\. User Experience-Focused (The "Simple" Choice)**
+#### **9.3 Reset Functionality**
+- **Reset Button:** Circular icon button in header (clear/refresh icon) 
+- **Action:** Clears all files, parsed config, and state to return to landing page
+- **Confirmation:** Dialog warning about losing unsaved changes before reset
 
-The application must maintain a responsive UI at all times by processing complex configuration logic in the background via Web Workers, preventing the browser from freezing during file imports.
+---
 
-### **8\. Packages**
+### **10. Monetization Strategy**
 
-Only use packages which are most reliable and will not break in the future. Avoid using packages that have not been updated in the last 6 months or have a low number of downloads.
+- **Donations:** Non-obstructive button linking to Buy Me a Coffee/Patreon
+- **Affiliate Links:** "Recommended Hosting" section in Go Live checklist
+- **Native Sponsorship:** Single sidebar link for developer tools (Sentry, Postman)
+- **No paywalls:** Core functionality remains free
 
-[https://www.digitalocean.com/community/tools/nginx](https://www.digitalocean.com/community/tools/nginx)  
-[https://nginxproxymanager.com/](https://nginxproxymanager.com/)  
-[https://www.serverion.com/nginx-config/](https://www.serverion.com/nginx-config/)
-
-**We should expand more on the "Security Review" logic in future and earning**
+---

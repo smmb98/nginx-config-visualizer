@@ -1,75 +1,26 @@
-# React + TypeScript + Vite
+# Nginx Configuration Visualizer & Debugger
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An advanced, browser-only interactive visualizer, debugger, and generation tool that synchronizes raw Nginx configuration code with an intuitive node-based architectural layout and UI form editor. 
 
-Currently, two official plugins are available:
+## 🚀 The Problem & The Solution
+Nginx configurations can quickly grow into a complex web of nested blocks, inheritance gotchas, and proxy rules that are difficult to debug visually. Existing tools provide simple text-based forms, but fail to show *how* traffic flows through your server blocks, locations, and upstream proxies.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This tool bridges that gap by providing **three-way synchronization** in real time:
+1. **Visual UI Editor:** Modular forms to configure server blocks, routing, security headers, and reverse proxies.
+2. **Interactive Node Layout:** A visual representation of traffic flow from client to upstream servers.
+3. **Raw Code View:** High-fidelity, syntax-highlighted production-ready Nginx configuration files.
 
-## React Compiler
+## 🛠️ Architecture & Core Tech Stack
+* **Frontend:** React with TypeScript (optimized for strict type safety across Nginx directives).
+* **State Management:** Zustand (leveraging highly decoupled, atomic state updates to ensure seamless three-way UI/Code/Visual synchronization without performance degradation).
+* **Parsing & Generation Logic:** Custom browser-side logic heavily inspired by enterprise patterns found in `digitalocean/nginxconfig.io`.
+* **Deployment:** Zero backend dependency. 100% client-side compilation, meaning maximum privacy and instant rendering with zero hosting overhead.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## ⚡ Key Engineering Challenges Overcome
+* **Cyclic & Complex Synchronization:** Implementing bidirectional updates across forms, reactive visual charts, and a generated text codebase without triggering infinite rendering loops.
+* **Directives Inheritance Logic:** Modeling Nginx's hierarchical inheritance rules (Global -> Server -> Location) explicitly within a relational JavaScript state machine.
 
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🗺️ Roadmap
+- [ ] Implement abstract syntax tree (AST) generation for uploaded `nginx.conf` files.
+- [ ] Add real-time syntax debugging and optimization warnings (e.g., missing security headers, faulty try_files routing).
+- [ ] Integrate dark mode and downloadable config bundles (.zip with complete directory structure).
