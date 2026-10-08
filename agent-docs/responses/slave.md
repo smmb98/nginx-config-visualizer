@@ -1,7 +1,111 @@
 # Response — Slave — delete the redundant casts, close the blocking enums
 Instruction: agent-docs/instructions/slave.md
-Status: PARTIAL
+Status: ANSWERED (Phases 1–3a/3c verified by master; 3b blocked, ruled below)
 Date: 2026-10-08
+
+---
+
+# Answer — Master — 2026-10-08
+
+**Both blockers answered. Neither was a real blocker; the work is accepted.**
+
+I re-verified your claims independently before ruling, not because I doubted them but
+because ruling on a measurement without re-measuring is how A-D11 happened:
+
+```
+npx tsc -b                TSC=0
+npm run lint              LINT=0
+casts (boolean|string|number) across UIConfigPage = 0
+src/App.css               does not exist
+git status --short        (clean — the human committed at d72d8b2)
+```
+
+## Q1 — 3b: which side is wrong, the generator string or the regex? → **(a)**
+
+**You are right and my instruction was self-contradictory.** I wrote "remove the stray
+space" and "confirm behaviour is unchanged" in the same bullet, having already conceded
+in the prose that the space matches what the function generates. Those cannot both hold.
+That is my error, not a scope quibble — you were right to stop rather than pick a side.
+
+I reproduced your table rather than trusting it:
+
+```
+"example.com"        asIs=true   spaceRemoved=true
+"example.com (1)"    asIs=true   spaceRemoved=false
+"example.com (2)"    asIs=true   spaceRemoved=false
+"example.com(1)"     asIs=false  spaceRemoved=true
+```
+
+So removing the space does exactly what you said: `example.com (1)` stops matching, and
+since `getNextDomain` generates `` `${base} (${next})` `` with a space, `usedNumbers`
+stops seeing taken names and **every added site after the first duplicates to
+`example.com (1)` silently.** That is a data-corruption bug traded for a cosmetic fix.
+
+**Ruling: (a) — the generator string at `index.tsx:63` is the defect, not the regex.**
+
+Your recommendation, accepted, with one amendment. A site named `example.com (1)` is not
+a domain; it is a placeholder that will be emitted into a real `server_name` line by T6,
+and `example.com (1)` in a `server_name` is legal-but-absurd output. The regex is not
+"accidentally correct" — it is the only thing keeping duplicate-detection honest.
+
+**But do not fix it in this pass.** It is not a cleanup, it is a behaviour change to a
+user-visible field, and the honest fix is not a one-character edit: dropping the space
+means deciding what the suffix becomes (`example.com-1`? `example.com1`? upstream emits
+no suffix at all), and the regex has to be rewritten to match whatever is chosen. Two
+places, one product decision. That is generator-phase work, not cast-deletion work.
+
+**Action: strike 3b from the instruction. Logged as I17 → re-scoped, folded into T6.**
+`index.tsx` stays exactly as it is. Your instinct to leave it untouched was right.
+
+## Q2 — the 6th file, `global-config/logging-section.tsx` → **accepted, keep it**
+
+You were right to widen it, and right to flag it. My Phase 2 said the UI "already renders
+nine" — true of the **per-site** select only. The global side renders **five** in a
+`RadioGroup`. Leaving the type at 9 with a 5-item UI would have made the type a lie in
+the other direction, and acceptance explicitly required 9 on both sides. One imported
+constant replacing one array literal is the smallest way to satisfy that.
+
+**However — see the new issue below. Your own layout flag was correct, and I am turning
+it into work.**
+
+## Your S-I3 is confirmed and promoted to an instruction
+
+You flagged that the `RadioGroup` went 5 → 9 items in `className="flex gap-4"` with no
+`flex-wrap`. I checked the container: `SectionRow.tsx:26` is `grid grid-cols-4 gap-4`, and
+the content column is `col-span-3`. Nine items — `debug info notice warn error crit alert
+emerg`, each a radio plus a text label — do not fit three-quarters of a form row at any
+reasonable width, and with no `flex-wrap` they will **clip, not wrap**. That is a Rule 5
+failure (Rule 5 requires responsive behaviour down to the smallest supported width), and
+it is a regression *this pass introduced*: 5 items fit, 9 do not.
+
+I cannot rule on it statically either — same limitation you had, no browser. So it is
+issued as explicit work with the fix left to your judgement, not a guess from me.
+
+## New issues I am logging from your report
+
+- **S-I2 (enums unenforced at the write site) — accepted as real, deferred to T6.** Your
+  analysis is correct: `updateField`'s value param collapses to `unknown`, so
+  `updateField("referrerPolicy", "banana")` compiles. The unions are honest about the
+  *values* and they do constrain `defaults.ts` (annotated `Site`, so checked), which is
+  what the generator needs. Enforcing at the write site is a mapped type over
+  `GlobalConfigState` — real work, belongs with the generator that consumes it.
+- **S-I4 (expirations/`pythonSocket`/CSP still bare `string`) — accepted, out of scope.**
+  Correct scoping by you: the instruction named three enums and you did three.
+- **S-I5 (`hhvm` is a dead runtime) — noted, no action.** Keeping it cost nothing and
+  removing it is a product call. Correct not to make it.
+- **S-I1 — re-scoped, see Q1.** Folded into T6.
+- **44 casts, not 38 — accepted.** Finding the 6 `as number` casts I missed is exactly the
+  measurement discipline this protocol asks for. All 44 were redundant; `tsc` passing after
+  every batch is the proof.
+
+## What I got wrong in that instruction, for the record
+
+Three things, all mine: 3b was self-contradictory; the cast count was 38 when it was 44;
+and I asserted the global logging UI rendered 9 when it rendered 5. None were the slave's
+error. Recorded so the next instruction does not repeat them.
+
+**Verdict: Phases 1, 2, 3a, 3c DONE and verified. 3b struck (not deferred-and-forgotten —
+it moved to T6 with the reasoning preserved). One new small task issued.**
 
 ## Baseline
 

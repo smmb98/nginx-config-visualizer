@@ -303,24 +303,24 @@ Do not re-report these as broken. What T2 actually changed:
   This file was **not** in the instruction; it was a real lint error no config override
   could honestly absorb.
 
-**Known leftovers from T2** (carried into T3's scope, all recorded in `TASKS.md`):
+**Leftovers still open** (all recorded in `TASKS.md`):
 
 - **4 native `<select>` vs shadcn `Select` across the form.** `global-config/{nginx,
   security}-section.tsx` use the radix composite; `per-website-config/{php,routing,
   logging}-section.tsx` use native. Consistent *within* each screen, not across the app.
-  The popups differ (OS-styled vs app-styled). One decision, not yet made.
+  **Deferred by decision A-D12** — not a felt defect; decide when the next section is
+  written, when matching costs one file instead of five.
 - **`addSite` needs a whole `SiteServerConfig` to change one field.** `Partial<Site>` is
-  shallow, so the single call site spreads `DEFAULT_STATE.sites[0].server`. Works today;
-  a trap for the presets pass. `DeepPartial` or an `addSite({ domain })` overload are both
-  `types.ts` shape changes.
-- **`getNextDomain`'s regex has a stray space** — `index.tsx:48`
-  `` `^${base}( \\((\\d+)\\))?$` `` — so `( \\(` means "space then literal paren". It works
-  by accident, matching only the exact form it generates. Do not mistake it for
-  intentional escaping.
+  shallow, so the single call site spreads `DEFAULT_STATE.sites[0].server`. Works today.
+  **Deferred by A-D13** until presets are the second caller.
+- **`getNextDomain` emits domains containing a space** — `` `${base} (${next})` `` at
+  `per-website-config/index.tsx:63`, with the regex at `:48` deliberately matching that
+  exact form. **This is not a stray space** (ruled, I17): deleting it makes every site
+  after the first silently duplicate. T6 will emit this into a real `server_name`, so the
+  *generator string* is the defect — moved to T6 as a product decision, not a cleanup.
 - **`ui/carousel.tsx:96` still calls `setState` synchronously in an effect**, hidden by
   the override. Correct today (`carousel` is unrendered); would be a real cascading
   render if someone renders it.
-- **`src/App.css` is dead** — zero references from `src/main.tsx` or `index.html`.
 
 **Placeholder UI (looks finished, is not wired):** `CodeConfigPage` (hardcoded config,
 `isValid` frozen `true`, Format/Save buttons do nothing), `VisualConfigPage`
@@ -338,6 +338,9 @@ the two justifications on 2026-10-08 and **both failed**:
    fields that are **already correctly typed** (`dockerfile: boolean`, `gzipCompression:
    boolean`). Grep-verified: **zero** casts sit on a union-typed field. The casts are
    redundant today, flat or nested. **They can be deleted right now for free.**
+   **Proven, not argued:** T3 deleted **44** (38 measured + 6 `as number` missed) and
+   `tsc` stayed green after every batch. Under nesting, `as boolean` on a `boolean` is
+   still legal — **all 44 would have survived.** The causal link did not exist.
 2. *"The generator needs dotted paths."* It does not. `updateField` is called **189
    times** across the 9 `global-config` sections, every one a flat key. Dotted paths
    would require editing all 189 call sites to buy nothing the generator needs — it
@@ -348,18 +351,32 @@ high-churn diff whose only real benefit is symmetry with `Site`. Decision A-D11 
 T3: the casts and enums (cheap, genuinely blocking) go now; the nesting (cosmetic,
 touching 189 call sites) is **deferred until something actually needs it**.
 
-**What the generator genuinely cannot do yet — the real T3 blockers:**
-- `phpServer` holds invented keys (`php8.2-sock`, `hhvm`, `tcp`), not real
-  `fastcgi_pass` targets. Upstream emits `fastcgi_pass unix:/var/run/php/php7.2-fpm.sock`.
-  The generator cannot expand `php8.2-sock` into a socket path — **the enum values
-  themselves are wrong**, so this is a data fix, not a typing fix.
-- `referrerPolicy` is a bare `string` and upstream emits it as a **`map $uri
-  $ref_policy`** keyed on `wp-admin|wp-login|xmlrpc.php`, not a plain `add_header`.
-  Needs a closed enum.
-- `errorLogLevel` is truncated in `types.ts:147` — typed
-  `debug|info|notice|warn|error`, but `per-website-config/logging-section.tsx:116-123`
-  already renders **9** options including `crit|alert|emerg`. The type is behind its own
-  UI. (Per-site also needs `none`.)
+**What the generator genuinely cannot do yet — the real T3 blockers. NOW FIXED (`d72d8b2`):**
+- `phpServer` held invented keys (`php8.2-sock`, `hhvm`, `tcp`), not real `fastcgi_pass`
+  targets, so no generator could expand them. **Now `PhpFpmTarget`** (`types.ts:7-14`) —
+  a union whose every member is *exactly* the emitted string, so "a key that is not also
+  the output" is unrepresentable. `tcp` dropped (`phpServerCustom` already covers a
+  `host:port`); `hhvm` kept with its real path.
+- `referrerPolicy` was a bare `string`. **Now `REFERRER_POLICIES`** (`types.ts:34-43`), an
+  `as const` array with `ReferrerPolicy` derived from it, and the UI maps the same
+  constant — so a 9th value cannot be added to the UI without the type following.
+  Upstream still emits this as a **`map $uri $ref_policy`** keyed on
+  `wp-admin|wp-login|xmlrpc.php`, not a plain `add_header` — generator work, T6.
+- `errorLogLevel` was typed to 5 levels while its own UI rendered 9. **Now
+  `ERROR_LOG_LEVELS`** (`types.ts:16-25`, 8 upstream levels) + `SITE_ERROR_LOG_LEVELS`
+  (adds `none`). Both UIs map the constant.
+
+**Remaining, deliberately deferred to T6 (I21, I23):** the unions are **not enforced at
+the write site** — `updateField`'s value param is `string | number | boolean | unknown`,
+which collapses to `unknown`, so `updateField("referrerPolicy", "banana")` compiles. They
+do constrain `defaults.ts`, which is annotated and therefore checked, and that is what the
+generator reads. The four expiration fields, `pythonSocket`, `contentSecurityPolicy` and
+`permissionsPolicy` remain bare `string`.
+
+**Live defect introduced by T3 (I22 / T14):** the global `error_log level` RadioGroup is
+now 9 items in `className="flex gap-4"` with **no `flex-wrap`** (`global-config/
+logging-section.tsx:61`), inside a `SectionRow` that is `grid-cols-4` with the control in
+`col-span-3`. Nine radio+label pairs will clip rather than wrap. Needs a browser.
 
 **Enum drift — the generator cannot be written honestly until these are fixed.**
 `referrerPolicy`, `errorLogLevel` (both global and per-site), `sslProfile`, `phpServer`,
@@ -431,21 +448,56 @@ writing it against the flat shape means writing it twice.
 **T2 is DONE and verified** (`61204fe`: `tsc -b` 0, `lint` 0, `build` 0). Nothing
 below is blocked on it any more.
 
-**Next tasks, in order.** Task 1 below was **re-scoped on 2026-10-08** — the old T3
-("nest `GlobalConfigState`, which deletes the 38 casts and gives the generator dotted
-paths") was measured and found to rest on two false premises. See §7 and decision
-A-D11.
+**T3 is DONE and verified** (`d72d8b2`: `tsc -b` 0, `lint` 0, 0 casts remaining,
+`App.css` deleted, 9 defaults corrected, 3 enums closed). Its 3b sub-task — the
+`getNextDomain` space — was **ruled a product decision and moved to T6**; see I17 in
+`TASKS.md`. One regression it introduced is now the next task.
 
-1. **Delete the 38 redundant casts and close the enums that actually block the
-   generator.** The 38 `as boolean`/`as string` casts in the 9 `global-config` sections
-   are pure noise — they cast selectors whose fields are already correctly typed.
-   **Delete them; do not nest anything to remove them.** Then fix the three enums the
-   generator genuinely cannot expand: `phpServer` (fake keys → real `fastcgi_pass`
-   socket paths), `referrerPolicy` (bare `string` → closed enum, and note upstream
-   emits it as a `map $uri` block, not an `add_header`), `errorLogLevel` (type is
-   truncated to 5 levels while its own UI already offers 9). Plus the default drift in
-   §7. **Do NOT nest `GlobalConfigState`** — that is deferred (A-D11); it would touch
-   189 `updateField` call sites to buy symmetry the generator does not need.
+**Next tasks, in order.**
+
+1. **T14 — fix the `error_log level` RadioGroup regression.** T3 widened the global
+   logging UI from 5 levels to 9 in `className="flex gap-4"` with no `flex-wrap`, inside
+   a `grid-cols-4` `SectionRow` whose control column is `col-span-3`
+   (`global-config/logging-section.tsx:61`). Nine radio+label pairs do not fit that width
+   and will **clip, not wrap**. Needs a browser to verify — master has not seen it
+   rendered. Small, self-contained, and it is a live Rule 5 failure, so it goes first
+   rather than being buried under feature work.
+2. **Add the missing option surface: Presets, then Setup.** Presets = the nine bundles
+   in `docs/competitive-options.md` §3.2, in a **collapsible panel above the per-site
+   tabs** per A-D10, with the tab-strip variant kept as a static sample under `docs/`.
+   Setup = Download (zip + base64), SSL, Certbot, Go live — SRS §3.4's "Go Live
+   Checklist", which is also where `CodeConfigPage`'s dead Format/Save buttons belong.
+   Presets will be the second caller of `addSite`, which is the trigger for fixing its
+   shallow-`Partial` signature (§7, A-D13).
+3. **Generate nginx files from the form store** (T6). One pure function,
+   `Site[] + global state → files`, living next to the UIConfig store, with one
+   assert-based self-check. **It writes files into the file tree, it does not return one
+   string** — see the A-D9 rules in §5. It reads the (flat, fine) state object directly.
+   T6 also inherits three things T3 deliberately left: the `getNextDomain` space
+   (I17), write-site enforcement of the closed enums (I21), and the remaining bare
+   `string` fields (I23).
+4. **Parser worker, written fresh** (T7). Tokenizer that emits `SEMICOLON`, directive
+   tree, feeding `setParsedConfig` + `setSyntaxErrors`. **It consumes the whole file
+   tree**, and its AST is the single input to both the code view and the visualizer
+   (A-D9). Then wire `CodeConfigPage` to the store so editing the file and editing the
+   form are the same state.
+
+**Answers to questions left open by T3** (ruled by master, 2026-10-08 — recorded in
+`TASKS.md` as A-D11 through A-D14):
+
+- **Do not nest `GlobalConfigState`.** Not a generator prerequisite (measured), and not
+  free (189 call sites). Proved empirically: all 44 casts were redundant and are now
+  deleted; nesting would have left every one of them standing. Revisit only if a second
+  writer appears that needs dotted paths.
+- **`getNextDomain`'s space is not stray** — the generator string is the defect. Ruled,
+  verified, and moved to T6 rather than "fixed" into a silent duplicate-domain bug.
+- **The global logging UI widening stays** (6th file, outside the stated scope) — leaving
+  the type at 9 with a 5-item UI would make the type lie in the other direction.
+- **The closed enums are not enforced at the write site.** `updateField`'s value param is
+  `string | number | boolean | unknown` → `unknown`, so `updateField("referrerPolicy",
+  "banana")` compiles. The unions constrain `defaults.ts` (annotated, therefore checked),
+  which is what the generator needs. Write-site enforcement is a mapped type, deferred to
+  T6 (I21).
 2. **Add the missing option surface: Presets, then Setup.** Presets = the nine bundles
    in `docs/competitive-options.md` §3.2, in a **collapsible panel above the per-site
    tabs** per A-D10, with the tab-strip variant kept as a static sample under `docs/`.

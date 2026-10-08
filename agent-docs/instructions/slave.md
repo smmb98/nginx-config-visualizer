@@ -1,10 +1,25 @@
 # Instruction — Slave — delete the redundant casts, close the blocking enums
-Status: PARTIAL
+Status: ANSWERED (Phases 1, 2, 3a, 3c DONE @ `d72d8b2` — verified by master.
+  **Phase 3b STRUCK** — ruled a product decision, moved to T6. See TASKS.md I17.)
 Issued: 2026-10-08
 Supersedes: build hygiene (DONE @ `61204fe`)
-Result: Phases 1, 2 done. Phase 3a + 3c done; **3b blocked** — its two requirements are
-mutually exclusive, see response `## Blockers` #1. Awaiting ruling before touching
-`per-website-config/index.tsx`.
+
+> **Do not redo this instruction.** Phases 1, 2, 3a and 3c are complete and verified by
+> master: `tsc -b` 0, `lint` 0, **0** casts remaining (44 deleted — 38 as measured plus 6
+> `as number` the instruction missed), `App.css` deleted, 9 defaults corrected, 3 enums
+> closed. Both of the slave's blockers are answered in the `## Answer` block at the top of
+> `responses/slave.md`.
+>
+> **Phase 3b below is struck and must not be attempted.** Master wrote it, master got it
+> wrong: it asked for the space to be removed *and* for behaviour to stay unchanged, which
+> are mutually exclusive. The slave was right to refuse rather than pick a side. Ruled as
+> (a) — the generator string is the defect, not the regex — and moved to T6 because the
+> real fix is choosing a replacement suffix and rewriting the regex to match, which is a
+> product decision. The text is retained only as the audit trail.
+>
+> **One new task was born here:** the T3 pass widened the global `error_log level`
+> RadioGroup from 5 to 9 items with no `flex-wrap`, and it will clip (TASKS.md I22 /
+> decision A-D14). That is the next instruction, not a continuation of this one.
 
 ## Goal
 Make the generator's input honest: delete 38 casts that are pure noise, and fix the
@@ -160,13 +175,22 @@ Runs after: Phase 2 reports `tsc -b` exit 0 and both enums closed.
 | `assetsExpiration` / `mediaExpiration` / `svgExpiration` / `fontsExpiration` | `max` | `7d` |
 | `accessLogParameters` (per-site) | `combined` | `buffer=512k flush=1m` |
 
-**3b — `getNextDomain`'s regex works by accident** (issue I17,
-`per-website-config/index.tsx:48`):
-`` new RegExp(`^${base}( \\((\\d+)\\))?$`) `` — the `( \\(` is "space, then a literal
-open-paren", so it only matches `example.com (1)` **with the leading space**. That is
-the exact form `getNextDomain` itself generates, so it passes today. Fix the stray
-space. Confirm the behaviour is unchanged for the strings it actually produces, and say
-in your response what you checked.
+**3b — STRUCK. DO NOT ATTEMPT.** (issue I17, ruled in `responses/slave.md` `## Answer`)
+
+~~`getNextDomain`'s regex works by accident. Fix the stray space.~~
+
+Withdrawn by master. The original text asked for two things that cannot both hold: delete
+the space in `` `^${base}( \\((\\d+)\\))?$` `` **and** keep behaviour unchanged. The space
+is what matches `` `${base} (${next})` `` — the exact string the function generates at
+`index.tsx:63`. Removing it makes `example.com (1)` fail to match, so `usedNumbers` never
+sees the taken name and **every site added after the first silently duplicates to
+`example.com (1)`.**
+
+Ruled **(a): the generator string is the defect**, because T6 will emit
+`example.com (1)` into a real `server_name`. But the fix is not this one character — it is
+choosing the replacement suffix *and* rewriting the regex to match it. Two places, one
+product decision, generator-phase work. **Moved to T6 (`TASKS.md` I17). Leave
+`index.tsx` exactly as it is.**
 
 **3c — delete `src/App.css`** (issue I19). Grep-verify first that nothing imports it
 (`src/main.tsx`, `index.html`, anywhere in `src/`) — master found zero references, but

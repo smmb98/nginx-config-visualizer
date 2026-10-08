@@ -15,8 +15,10 @@ Context lives in `CONTEXT.md`. Open questions live in `BLOCKERS.md`.
 | T2a | Casing fix: `src/Components` → `src/components` (21 of 34 TS errors) | — | DONE — disk rename, zero git churn |
 | T2b | Fix the 13 real TS errors across 6 files | — | DONE |
 | T2c | Lint green: scoped `ui/**` override + `use-mobile.ts` | — | DONE |
-| **T3** | **Delete 38 redundant casts + close the 3 blocking enums + default drift** | 7 | **TODO (next)** — re-scoped by A-D11 |
-| T3x | ~~Nest `GlobalConfigState`~~ | 7 | **DEFERRED** — false premise, see A-D11 |
+| **T3** | **Delete 44 redundant casts + close the 3 blocking enums + default drift** | 7 | **DONE** @ `d72d8b2` — verified by master |
+| T3x | ~~Nest `GlobalConfigState`~~ | 7 | **CANCELLED** — false premise, A-D11 |
+| T3y | `getNextDomain` space-in-domain (was 3b) | 7 | **MOVED → T6** — product call, not a cleanup |
+| **T14** | **error_log level RadioGroup: 5 → 9 items, no `flex-wrap`, clips** | 7 | **TODO (next)** — regression from T3 |
 | T4 | Presets — **collapsible panel**, per A-B5 | 7 | TODO |
 | T4s | Presets **sample** mockup (tab-strip variant) under `docs/` | — | TODO |
 | T5 | Setup sections: Download / SSL / Certbot / Go live | 8 | TODO |
@@ -261,7 +263,7 @@ complete — the gaps are Presets, Setup, and the NPM-only entities.
 | ~~I1~~ | ~~`npm run build` fails, 34 TS errors~~ | — | **FIXED → I13** |
 | ~~I2~~ | ~~`npm run lint` fails, 13 errors~~ | — | **FIXED → I14** |
 | I8 | `GlobalConfigState` is a flat 60-field bag; `Site` is nested | `UIConfigPage/store/types.ts:100-179` | **DEFERRED — A-D11, false premise** |
-| I9 | Enum types bare `string` or truncated; `phpServer` holds fake keys not socket paths | `types.ts`, `php-section.tsx:47-55` | open → T3 |
+| ~~I9~~ | ~~Enum types bare `string` or truncated; `phpServer` holds fake keys~~ | — | **FIXED → I20** |
 | I3 | `CodeConfigPage` hardcodes its config; Format/Save do nothing | `pages/CodeConfigPage.tsx` | open → T8 |
 | I4 | `VisualConfigPage` is hand-drawn SVG, no data | `pages/VisualConfigPage.tsx` | open → T10 |
 | I5 | `AnalyticsPage` health score is `const 85` | `pages/AnalyticsPage.tsx` | open → T11 |
@@ -270,9 +272,13 @@ complete — the gaps are Presets, Setup, and the NPM-only entities.
 | I10 | ~~Committed mojibake in 3 files~~ | — | **CLOSED — never existed** |
 | I15 | 4 native `<select>` vs shadcn `Select` across the form | `per-website-config/{php,routing,logging}-section.tsx` | open → **A-D12**, deferred |
 | I16 | `addSite` needs a whole `SiteServerConfig` to change one field | `store/store.ts:21`, `types.ts:187` | open → **A-D13**, deferred to T4 |
-| I17 | `getNextDomain` regex has a stray space; works by accident | `per-website-config/index.tsx:48` | open, trivial |
+| I17 | `getNextDomain` emits domains containing a space (`example.com (1)`) | `per-website-config/index.tsx:48,63` | **MOVED → T6** — ruled a product call, not a bug fix |
 | I18 | `ui/carousel.tsx:96` calls `setState` in an effect; hidden by override | `components/ui/carousel.tsx:96` | open — correct while unrendered |
-| I19 | `src/App.css` is dead — zero references | `src/App.css` | open → fold into T3 |
+| ~~I19~~ | ~~`src/App.css` is dead~~ | — | **FIXED → I22** |
+| I20 | Enum values wrong (`phpServer` fake keys, `referrerPolicy` bare, `errorLogLevel` truncated) | `store/types.ts`, `php-section.tsx` | **FIXED → I21** |
+| I21 | Closed enums unenforced at the write site — `updateField`'s value param is `unknown` | `store/types.ts:206`, `store.ts:13` | open → T6 (mapped type) |
+| I22 | `error_log level` RadioGroup 5→9 items in `flex gap-4`, no wrap, in a `col-span-3` grid cell | `global-config/logging-section.tsx:61` | **open → T14, next task** |
+| I23 | Expirations, `pythonSocket`, CSP/permissions still bare `string` | `store/types.ts` | open → T6, if the generator needs it |
 | I11 | 9 dependency packages have zero imports in `src/`; `reactflow` never imported | `package.json` | open → T10 |
 | I12 | No gating and no mutual exclusion between PHP / Python / reverse proxy | 18 section files | open → T6 |
 | I13 | 14 documented conditional dependencies unenforced (CF log fields, `symlinkVhost`, …) | 18 section files | open → T6 |
@@ -300,6 +306,68 @@ typed as the shadcn composite but written as native `<select>`/`<option>`.
 case-insensitive filesystem) — **zero git churn, proving the index was already correct**.
 Then import/ordering/narrowing fixes in 6 files, each at source. No `any`, no `as`, no
 `@ts-ignore`. Verified: `npx tsc -b` → 0, `npm run build` → 0.
+
+### I20 — 2026-10-08 — The three generator-blocking enums had wrong *values*
+**Root cause:** not typing bugs. `phpServer` held invented short keys (`php8.2-sock`,
+`hhvm`, `tcp`) that no generator can expand into `fastcgi_pass unix:/var/run/php/php7.2-fpm.sock`;
+`referrerPolicy` was a bare `string`; `errorLogLevel` was typed to 5 levels while its own
+per-site UI already rendered 9 (`crit|alert|emerg` missing). Plus 9 drifted defaults
+(`modularizedStructure`/`symlinkVhost`/`redirectSubdomains` false, `clientMaxBodySize` 1,
+four expirations `max`, `accessLogParameters` `combined`).
+**Fix:** `PhpFpmTarget` is a union whose members are *exactly* the emitted strings, so a
+key that is not also the output is unrepresentable. `REFERRER_POLICIES` and
+`ERROR_LOG_LEVELS` are `as const` arrays with the type derived from them, and the UIs map
+the same constant — one source of truth, so a 9th value can no longer be added to the UI
+without the type following. 9 defaults corrected. `tcp` dropped (`custom` already covers
+a `host:port`); `hhvm` kept with its real socket path. `src/App.css` deleted (dead).
+Verified by master: `tsc` 0, `lint` 0, 0 casts remaining.
+
+### I22 — 2026-10-08 — `src/App.css` deleted
+Dead file: zero references from `src/main.tsx`, `index.html`, or anywhere in `src/` — the
+only grep hits repo-wide were in these agent docs. Deleted. Folded into T3 as a pure
+deletion rather than given its own pass.
+
+### A-D14 — 2026-10-08 — The global `error_log level` RadioGroup must wrap (regression from T3)
+**Question (S-I3, raised by the T3 slave, confirmed by master):** widening the global
+logging UI from 5 to 9 levels in `className="flex gap-4"` — is that safe?
+
+**Decision: no. It is a regression and it is now a task (T14).** `SectionRow.tsx:26` is
+`grid grid-cols-4 gap-4` and the control sits in `col-span-3`. Nine `radio + label` pairs
+(`debug info notice warn error crit alert emerg`) do not fit three-quarters of a form row,
+and with no `flex-wrap` they **clip rather than wrap**. Rule 5 requires responsive
+behaviour to the smallest supported width, and this pass is what took it from fitting to
+not fitting.
+
+**Why it is not fixed in place:** I have no browser either, and "add `flex-wrap`" is
+guesswork about a layout neither of us has seen rendered. It gets issued as work with the
+fix left to the slave's judgement and a browser check.
+
+**Also decided here:** the widening itself (6th file, outside the stated Phase 2 list) was
+**correct and stays**. Leaving the type at 9 with a 5-item UI would make the type a lie in
+the other direction, and acceptance required 9 on both sides.
+
+### I17 ruling — the space in `getNextDomain` is not stray
+**Question:** was the instruction right that `( \((\d+)\)` in `index.tsx:48` is a stray
+space to be deleted?
+
+**Decision: the instruction was wrong; the slave was right to refuse it.** Verified
+independently — `example.com (1)` and `example.com (2)` match the current pattern and
+**fail** without the space. Since `getNextDomain` generates `` `${base} (${next})` `` *with*
+a space, removing it makes every site after the first silently duplicate to
+`example.com (1)`. Trading working duplicate-detection for a cosmetic fix is a
+data-corruption bug.
+
+**Ruling (a): the generator string at `index.tsx:63` is the real defect** — a site named
+`example.com (1)` is a placeholder, and T6 will emit it into a real `server_name`. **But
+it is not a one-character fix:** dropping the space means choosing the replacement suffix
+*and* rewriting the regex to match it. Two places, one product decision. **Moved to T6**,
+reasoning preserved here so it is not re-derived as a "cleanup" later.
+
+### I21 → deferred
+Superseded by the I21 row above; recorded here so the cast cleanup and the enum closure
+stay one story. The 44 casts (38 measured + 6 `as number` the instruction missed) were all
+redundant — `as boolean` on an already-`boolean` field. Deleted outright, no nesting. This
+is the empirical proof that A-D11 was right: nesting would have left all 44 standing.
 
 ### I14 — 2026-10-08 — `npm run lint` exit 0 (was 13 errors)
 **Root cause:** 11 of 13 were the linter complaining about **generated** shadcn
