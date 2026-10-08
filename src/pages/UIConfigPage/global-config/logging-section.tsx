@@ -58,7 +58,7 @@ export function LoggingSection() {
             onValueChange={(v) =>
               updateField("errorLogLevel", v)
             }
-            className="flex gap-4"
+            className="flex flex-wrap gap-4"
           >
             {ERROR_LOG_LEVELS.map((lvl) => (
               <div key={lvl} className="flex items-center gap-2">

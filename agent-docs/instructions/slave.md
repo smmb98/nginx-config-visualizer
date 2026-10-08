@@ -1,6 +1,8 @@
 # Instruction — Slave — fix the `error_log level` RadioGroup clipping
-Status: OPEN
+Status: DONE
 Issued: 2026-10-08
+Completed: 2026-10-08 — `flex-wrap` added; measured clean at 1440/1280/1024/768,
+still broken at 390/360 (T15's 32px cell). Full numbers in `responses/slave.md`.
 Supersedes: delete the redundant casts / close the enums (ANSWERED @ `d72d8b2`)
 
 ## Goal
