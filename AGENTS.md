@@ -78,12 +78,34 @@ Short hands: M, S, A
 WHICH ROLE? (M / S / A)
 ```
 
-Then **stop and wait**. Do not read files, plan, or edit until the role is answered.
-Inferring the role from the prompt's content is forbidden — including when the
-prompt looks like an obvious implementation task (default is `A`, but still ask).
+**First, check whether the prompt already names a role.** A human who opens with
+"master", "slave", or "agent" (or `M` / `S` / `A`) has already answered. In that case:
+
+- **Skip the roster and skip the question.** Do not print it, do not ask, do not ask for
+  confirmation. Name the role in one short line and start working — read the files, then do
+  the job.
+- The named role governs everything else in this file for the rest of the session. Do not
+  switch, hedge, or re-ask mid-session; if the human wants a different role they will say
+  so, and that is the signal to switch.
+
+**Only if the prompt does NOT name a role**, print the roster and **stop and wait**. Do not
+read files, plan, or edit until the role is answered.
+
+**Inferring the role from the prompt's *content* is still forbidden** — including when the
+prompt looks like an obvious implementation task (default is `A`, but still ask). The
+distinction is deliberate:
+
+| Prompt | Action |
+|---|---|
+| "start working master" | Role stated → act as `M` now, no question |
+| "fix the lint errors" | Role not stated → ask, even though it looks like `A` |
+
+Naming a role is an explicit answer. Looking like a role is not.
+
 If `SLAVE` is named and `instructions/slave.md` has no open instruction, say so and
 offer to act as `M` first (to write the instruction) or as `A` (to do it directly) —
-let the human pick.
+let the human pick. This is the one case where a named role still pauses: there is
+literally no instruction to execute, and choosing the substitute is the human's call.
 
 ---
 
@@ -298,6 +320,14 @@ Status: DONE | BLOCKER | AWAITING-GO
 7. Keep `agent-docs/CONTEXT.md` current. Every session that changes the app leaves the
    file more accurate than it found it. A session that can't reconstruct the app from
    `CONTEXT.md` alone has failed its main duty.
+8. **When the human names the role, that is the answer — do not re-ask.** A prompt opening
+   with "master", "slave", or "agent" (or `M` / `S` / `A`) means print no roster and ask no
+   question: state the role in one line and begin. This is the case that used to waste a
+   round trip. Inferring the role from the prompt's *content* is still forbidden — "fix the
+   lint errors" still gets the roster, because naming a role is an explicit answer and
+   looking like one is not. See the Role Roster section for the full rule and its one
+   exception (naming `SLAVE` with no open instruction, which still pauses because there is
+   nothing to execute).
 8. Log the session: decisions into `TASKS.md` `## DECISIONS`, issues into `## ISSUES
    FIXED` / `## ISSUES OPEN`, open questions into `BLOCKERS.md`.
 

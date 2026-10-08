@@ -423,9 +423,14 @@ remainder of the file. Needs a rewrite if we want it.
    the four checks in `AGENTS.md`. Leftovers go in `## New issues / edge cases`.
 7. **Privacy is the product.** No network calls, no telemetry, no config leaves the
    browser. Nothing may add a backend.
-8. Answer the role question (`M` / `S` / `A`) before doing anything. There is one
-   slave; sequential work is expressed as numbered **phases** inside the single
-   `agent-docs/instructions/slave.md`, never as extra instruction files.
+8. Answer the role question (`M` / `S` / `A`) before doing anything — **unless the human
+   already named the role in their prompt, which is itself the answer.** If the prompt
+   opens with "master" / "slave" / "agent" (or `M` / `S` / `A`), print no roster, ask no
+   question, state the role in one line and begin. Inferring the role from the prompt's
+   *content* is still forbidden — "fix the lint errors" still gets the roster. Full rule
+   and its one exception (naming `SLAVE` with no open instruction) in `AGENTS.md`
+   § Role Roster. There is one slave; sequential work is expressed as numbered **phases**
+   inside the single `agent-docs/instructions/slave.md`, never as extra instruction files.
 
 ---
 
