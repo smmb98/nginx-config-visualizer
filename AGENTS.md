@@ -34,7 +34,8 @@ progress: `PLAN.md` / `CHECKLIST.md`. This file governs **how** work gets done.
    widths, (c) does the empty/loading/error path exist, (d) is anything dead, duplicated
    or now-redundant (delete it). Report what you checked and what you found — "looks
    fine" is not a verification. Anything still wrong goes in `## New issues / edge
-   cases` rather than being silently left.
+   cases` rather than being silently left. **(b) is measured, not eyeballed — any role
+   may and should do it: see *Testing the website*.**
 
 ## Folder of Record: `agent-docs/`
 
@@ -109,9 +110,110 @@ literally no instruction to execute, and choosing the substitute is the human's 
 
 ---
 
+## Testing the website (ALL THREE ROLES — M, S and A)
+
+**Every role may and should test and verify the running app.** This is not the slave's
+job and not the agent's job: it belongs to whoever is holding the pen. Rule 6 demands a
+real verification, and "looks fine" is explicitly not one — so if a change touches
+anything a user can see, **run it and look at it** before reporting.
+
+This does not loosen MASTER's "no code" rule (below). Verifying is not authoring: master
+may start the server, drive a headless browser, measure geometry, take screenshots, and
+report what is broken — but the fix still goes out as an instruction.
+
+### Is a browser available? Yes. Stop claiming otherwise.
+
+Chrome and Edge are installed on this machine, the dev server runs at
+`http://localhost:5173/`, and **Node 22 has a built-in `WebSocket` global.** That is
+enough to drive a real browser over the DevTools Protocol with **zero new dependencies**.
+
+Before reporting any UI as unverifiable, check:
+
+```bash
+try { (Invoke-WebRequest http://localhost:5173/ -UseBasicParsing -TimeoutSec 5).StatusCode }
+catch { "not running -> npm run dev" }
+```
+
+If the server is down, **start it** (`npm run dev`) rather than reporting that you could
+not test. Two consecutive passes once claimed no browser was available when one was sitting
+there the whole time; that cost both of them a weaker deliverable than the tooling allows.
+
+### The recipe — headless Chrome over CDP, no dependencies
+
+```bash
+Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+  -ArgumentList '--headless=new','--disable-gpu','--no-first-run',`
+                '--remote-debugging-port=9222',`
+                '--user-data-dir=<TEMP>\chrome-prof','about:blank'
+```
+
+Then connect with Node's built-in `WebSocket` — **do not `npm install` Playwright,
+Puppeteer or `ws`.** Adding a dependency to answer a one-line CSS question is the wrong
+trade, and Absolute Rule 7 keeps nothing off-machine.
+
+- `fetch('http://127.0.0.1:9222/json/list')` → the page target's `webSocketDebuggerUrl`
+- Send `Page.enable`, `Page.navigate`, `Emulation.setDeviceMetricsOverride` (per width),
+  and `Runtime.evaluate` your probe
+- `Page.captureScreenshot` for evidence
+
+Put throwaway scripts in the temp directory (`C:\Users\mohib\AppData\Local\Temp\opencode`),
+never in the repo.
+
+### Traps that have already cost a round trip
+
+- **`TabSelector.tsx` renders `<li onClick>` with NO `role="tab"`.** A click helper that
+  searches `button, a, [role=tab], [role=button], span, div` will report every tab as
+  "not found". **Search `li` too.**
+- **Click path into any config screen:** landing → `Create New Config` → `UI Config`
+  (Header) → the section tab. `UIConfigPage/index.tsx:19-20` renders the per-site **and**
+  global sections together, so both are on screen at once.
+- **The app gates on `isInitialized`** (persisted under `nginx-visualizer-storage`), so a
+  cold profile lands on the LandingPage. Click through the UI rather than hand-writing
+  localStorage.
+
+### Assert geometry, do not squint at screenshots
+
+Layout defects are measurable. Screenshots are *evidence to attach*, never the assertion.
+
+```js
+// clip test — PASS when both hold at every width tested
+const first  = document.querySelector('#err-lvl-debug');          // or your own control
+const group  = first.closest('[role=radiogroup]') || first.parentElement;
+const g      = group.getBoundingClientRect();
+const kids   = [...group.children].map(k => k.getBoundingClientRect());
+//   no kid.right > g.right + 1        -> nothing spills out of its container
+//   group.scrollWidth <= group.clientWidth + 1   -> no hidden overflow
+```
+
+Also check whether the **page** scrolls (`documentElement.scrollWidth > window.innerWidth`).
+If it does not, then overflow contained inside a child with no `overflow` rule means the
+content is **clipped and unreachable** — a functional defect, not a cosmetic one.
+
+Quote the numbers in your response. "Verified" without numbers is the same as "looks fine".
+
+### What still needs the human
+
+Measurement cannot judge **feel**. These stay human calls, and you should say so rather
+than fake a verdict:
+
+- whether a fix *looks* like the rest of the product (`docs/*/code.html` is the baseline)
+- anything about hierarchy, density or breathing room
+- design decisions that measurement cannot settle — e.g. whether the Workspace left panel
+  becomes a drawer on phones (`TASKS.md` T15)
+
+**The width floor is settled: 360px CSS viewport, a standard small smartphone**
+(`TASKS.md` A-D16). Test 360 / 390 / 768 / 1024 / 1440. **The app does not currently
+support 360px** — the shell is fixed-width and every `SectionRow` control collapses to
+~32px. Do not quietly assume it works; measure and report.
+
+---
+
 ## Role: MASTER
 
-Decides, maintains context, tracks implementation, writes instructions. **No code.**
+Decides, maintains context, tracks implementation, writes instructions. **No code** —
+but see *Testing the website* above: master **may and should** run the app, drive a
+headless browser, measure geometry and report defects. Verifying is not authoring; the fix
+still ships as an instruction.
 
 Per session:
 
@@ -204,6 +306,8 @@ Executes one instruction, phase by phase, then reports. Nothing else.
    Phase 2 ends the pass — it does not authorize starting Phase 3.
 6. Otherwise implement the smallest correct change per phase. Run the project's
    lint/typecheck/test commands (from `CONTEXT.md`) and report the result verbatim.
+   **If the change touches anything visible, also verify it in the running app** — see
+   *Testing the website*. Quote measured numbers, not adjectives.
 7. Run the Absolute Rule 6 self-review pass before writing `DONE`.
 8. Write the response file `agent-docs/responses/slave.md`, template below. One
    section per phase — a phase that was never reached says so rather than being
@@ -273,7 +377,8 @@ Per session:
 3. **Ask before implementing.** State the plan, ask for go-ahead, and wait. Never start
    editing on an inferred yes, silence, or an ambiguous reply.
 4. After go-ahead: implement the smallest correct change, run lint/typecheck/test.
-   Sequence dependent work yourself and say which steps gate which.
+   Sequence dependent work yourself and say which steps gate which. If the change is
+   visible, **verify it in the running app** — see *Testing the website*.
 5. Run the Absolute Rule 6 self-review pass before writing `DONE`.
 6. Report to `agent-docs/responses/agent.md` (its own slot — never the slave slot).
    When writing instructions as part of an agent session, write them to

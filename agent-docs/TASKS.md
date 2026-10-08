@@ -18,7 +18,8 @@ Context lives in `CONTEXT.md`. Open questions live in `BLOCKERS.md`.
 | **T3** | **Delete 44 redundant casts + close the 3 blocking enums + default drift** | 7 | **DONE** @ `d72d8b2` — verified by master |
 | T3x | ~~Nest `GlobalConfigState`~~ | 7 | **CANCELLED** — false premise, A-D11 |
 | T3y | `getNextDomain` space-in-domain (was 3b) | 7 | **MOVED → T6** — product call, not a cleanup |
-| **T14** | **error_log level RadioGroup: 5 → 9 items, no `flex-wrap`, clips** | 7 | **TODO (next)** — regression from T3 |
+| **T14** | **error_log level RadioGroup: 5 → 8 items, no `flex-wrap`, clips below 1024** | 7 | **TODO (next)** — regression from T3 |
+| **T15** | **App shell is desktop-only: no layout below 768px** | 7 | **TODO** — exposed by the A-D16 floor; design call |
 | T4 | Presets — **collapsible panel**, per A-B5 | 7 | TODO |
 | T4s | Presets **sample** mockup (tab-strip variant) under `docs/` | — | TODO |
 | T5 | Setup sections: Download / SSL / Certbot / Go live | 8 | TODO |
@@ -277,7 +278,8 @@ complete — the gaps are Presets, Setup, and the NPM-only entities.
 | ~~I19~~ | ~~`src/App.css` is dead~~ | — | **FIXED → I22** |
 | I20 | Enum values wrong (`phpServer` fake keys, `referrerPolicy` bare, `errorLogLevel` truncated) | `store/types.ts`, `php-section.tsx` | **FIXED → I21** |
 | I21 | Closed enums unenforced at the write site — `updateField`'s value param is `unknown` | `store/types.ts:206`, `store.ts:13` | open → T6 (mapped type) |
-| I22 | `error_log level` RadioGroup 5→9 items in `flex gap-4`, no wrap, in a `col-span-3` grid cell | `global-config/logging-section.tsx:61` | **open → T14, next task** |
+| I22 | `error_log level` RadioGroup 8 items in `flex gap-4`, no wrap, in a `col-span-3` cell | `global-config/logging-section.tsx:61` | **open → T14, next task** |
+| I24 | **App shell has no phone layout** — 200px fixed sidebar, header children total 788px, `SectionRow` gives controls 32px at 360px; 12/12 rows affected, 4 clipped | `Workspace.tsx`, `Header.tsx`, `SectionRow.tsx` | **open → T15** |
 | I23 | Expirations, `pythonSocket`, CSP/permissions still bare `string` | `store/types.ts` | open → T6, if the generator needs it |
 | I11 | 9 dependency packages have zero imports in `src/`; `reactflow` never imported | `package.json` | open → T10 |
 | I12 | No gating and no mutual exclusion between PHP / Python / reverse proxy | 18 section files | open → T6 |
@@ -326,6 +328,78 @@ Verified by master: `tsc` 0, `lint` 0, 0 casts remaining.
 Dead file: zero references from `src/main.tsx`, `index.html`, or anywhere in `src/` — the
 only grep hits repo-wide were in these agent docs. Deleted. Folded into T3 as a pure
 deletion rather than given its own pass.
+
+### A-D15 — 2026-10-08 — The browser is available; "no browser" is no longer an excuse
+**Question:** two consecutive passes reported the layout as unverifiable because no
+browser was available. The human then pointed out a dev server at
+`http://localhost:5173/`.
+
+**Decision: treat it as available and use it.** Chrome and Edge are both installed on this
+machine, and Node 22 has a **built-in `WebSocket` global**, so the DevTools Protocol is
+reachable in ~30 lines of throwaway script with **zero new dependencies** — no Playwright,
+no Puppeteer, no `ws` package, nothing added to `package.json`.
+
+**Why this matters beyond one task:** Rule 6 demands a real verification, and "looks fine"
+is explicitly not one. Both prior passes hit a *measurable* problem and could not close it,
+so the honest report was "unverified" — correct, but a weaker deliverable than the tooling
+allows. Measurement then corrected **master twice**: the global control has 8 options, not
+9 (the 9th, `none`, is per-site only), and the failure is worse than "may clip" — at 768px
+four of eight options are clipped with no way to scroll to them, because the page does not
+overflow and the `RadioGroup` has no `overflow` rule of its own.
+
+**Two traps recorded so they are not re-hit:** `TabSelector.tsx:35` renders `<li onClick>`
+with **no `role="tab"`**, so `[role=tab]` finds nothing; and clipping is a geometry
+problem, so it must be asserted numerically (`child.right <= container.right`,
+`scrollWidth <= clientWidth`) with a screenshot attached as evidence, not inspected by eye.
+
+**Standing rule: before reporting any UI as unverifiable, check whether Chrome is
+installed and drive it over CDP.**
+
+### A-D16 — ANSWERED 2026-10-08 — smallest supported width is a **standard small smartphone**
+**Question (raised by master):** Rule 5 requires responsiveness "down to the smallest
+supported width" but nothing defined it.
+
+**Answer (human):** standard small smartphone. Recorded as **360px CSS viewport**, tested
+alongside 390 / 768 / 1024 / 1440.
+
+**Consequence, and it is not small:** declaring this floor exposed that **the app shell is
+desktop-only.** Measured over CDP at 360px:
+
+| element | at 360px | problem |
+|---|---|---|
+| Workspace left panel (`FileTree`) | **200px, fixed** | never collapses or shrinks |
+| content panel | 156px | whatever survives the panel |
+| glass-panel `p-6` padding | −48px | ~108px of usable content |
+| `SectionRow` `grid-cols-4` | label **8px** / control **32px** | unusable for *any* control |
+| Header | `w-36` + `w-36` + 500px nav = **788px** in a 360px bar | overflows |
+
+**All 12** field rows collapse to a 32–46px control column at 360/390px, and **4 are
+already clipped** in sections no current task touches. A missing `flex-wrap` class cannot
+rescue a 32px cell.
+
+### A-D17 — 2026-10-08 — T14 stands for tablet; shell responsiveness is a separate task
+**Question:** T14 was scoped as one class in one file against a 768px floor. The floor is
+now 360px, and `flex-wrap` measurably does **not** reach it — injected at the DOM level it
+still clips every option, because the cell is 32px and one option is 66px.
+
+**Decision: keep T14, add T15.** T14 stays one class because it is *correct at ≥768px*,
+which is where the logging row genuinely breaks:
+
+| width | cell | content | with `flex-wrap` |
+|---|---|---|---|
+| 1024 | 469 | 568 | 2 rows — **fixed** |
+| 768 | 328 | 568 | 2 rows — **fixed** |
+| 390 | 46 | 568 | 8 rows, **still clipped** |
+| 360 | 32 | 568 | 8 rows, **still clipped** |
+
+**Why not fold T15 into T14:** different defects, different files, different causes — a
+missing class versus a fixed-width shell. Folding them makes the one-line fix
+unverifiable and hides which change broke what.
+
+**T15 (shell responsiveness at ≤390px)** is a Rule 5 failure like T14, not a nicety, now
+that the floor is declared. It carries its own design decision: whether the left panel
+becomes a drawer on mobile. That is a design call, not a CSS call, and master does not
+make it alone.
 
 ### A-D14 — 2026-10-08 — The global `error_log level` RadioGroup must wrap (regression from T3)
 **Question (S-I3, raised by the T3 slave, confirmed by master):** widening the global
@@ -389,7 +463,8 @@ code. Verified: `npm run lint` → 0, `tsc -b` still 0, `build` still 0.
 | slot | title | status | structure |
 |---|---|---|---|
 | `instructions/slave.md` | build hygiene (reissued) | **DONE** | 2 sequential phases — both green |
-| `instructions/slave.md` | casts + enum closure + default drift | **OPEN** | 3 sequential phases (T3, re-scoped) |
+| `instructions/slave.md` | casts + enum closure + default drift | **ANSWERED** | 3 phases — 1/2/3a/3c done, 3b struck |
+| `instructions/slave.md` | `error_log level` RadioGroup clipping | **OPEN** | 1 phase — **issued**, awaiting execution |
 
 Closed by the second issue:
 
@@ -406,6 +481,20 @@ Closed by the second issue:
 Issued 2026-10-08 (third session). T3 re-scoped by A-D11 — the two-phase build-hygiene
 shape was kept, but the *content* of what it fixes changed: 3 phases now, and the
 nesting is gone.
+
+**Third issue, same day: T14 (one phase).** The T3 pass widened the global `error_log
+level` RadioGroup from 5 to 9 items without adding `flex-wrap`, and it clips. Logged as
+A-D14/I22 while T3 was being closed, and **issued as its own instruction immediately
+after** — a live Rule 5 failure outranks the feature queue, so it does not wait behind
+presets.
+
+**A process note, because it nearly shipped.** A-D14 and the I22 row were both written
+during the same session that closed T3, and the instruction slot was left holding the
+*completed* T3 file. The decision was recorded and the work was never issued — the slot
+and the tracker disagreed, which is exactly the drift `CONTEXT.md` §9 is meant to prevent.
+Caught only because the human asked. **Master's rule going forward: log the decision, then
+issue the instruction in the same breath, and verify the instruction slot's `Status:` line
+matches the tracker's next task before reporting a session done.**
 
 Reissued 2026-10-08 (second session). Same goal as the previous issue, but the phase
 list changed materially after measurement:

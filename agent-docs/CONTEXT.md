@@ -374,9 +374,19 @@ generator reads. The four expiration fields, `pythonSocket`, `contentSecurityPol
 `permissionsPolicy` remain bare `string`.
 
 **Live defect introduced by T3 (I22 / T14):** the global `error_log level` RadioGroup is
-now 9 items in `className="flex gap-4"` with **no `flex-wrap`** (`global-config/
+8 items in `className="flex gap-4"` with **no `flex-wrap`** (`global-config/
 logging-section.tsx:61`), inside a `SectionRow` that is `grid-cols-4` with the control in
-`col-span-3`. Nine radio+label pairs will clip rather than wrap. Needs a browser.
+`col-span-3`. Measured over CDP: content is a flat **568px**, so it overflows below
+1024 — at 1024 `alert`/`emerg` are clipped, at 768 four of eight are. The page itself does
+not overflow, so the clipped options are **unreachable, not merely off-screen**.
+
+**The app does not support the declared 360px floor at all (I24 / T15).** Measured at
+360px: Workspace left panel is a fixed **200px**, leaving a 156px content panel; minus the
+glass-panel's `p-6` that is ~108px; `SectionRow`'s `grid-cols-4` then splits it into an
+**8px label and a 32px control**. The Header's children (`w-36` + `w-36` + a 500px nav)
+total **788px** in a 360px bar. All 12 field rows are affected and 4 already clip in
+sections no task touches. A `flex-wrap` class cannot rescue a 32px cell — verified by
+injecting it at the DOM level and re-measuring. See decision A-D17.
 
 **Enum drift — the generator cannot be written honestly until these are fixed.**
 `referrerPolicy`, `errorLogLevel` (both global and per-site), `sslProfile`, `phpServer`,

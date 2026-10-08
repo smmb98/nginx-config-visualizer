@@ -1,239 +1,198 @@
-# Instruction — Slave — delete the redundant casts, close the blocking enums
-Status: ANSWERED (Phases 1, 2, 3a, 3c DONE @ `d72d8b2` — verified by master.
-  **Phase 3b STRUCK** — ruled a product decision, moved to T6. See TASKS.md I17.)
+# Instruction — Slave — fix the `error_log level` RadioGroup clipping
+Status: OPEN
 Issued: 2026-10-08
-Supersedes: build hygiene (DONE @ `61204fe`)
-
-> **Do not redo this instruction.** Phases 1, 2, 3a and 3c are complete and verified by
-> master: `tsc -b` 0, `lint` 0, **0** casts remaining (44 deleted — 38 as measured plus 6
-> `as number` the instruction missed), `App.css` deleted, 9 defaults corrected, 3 enums
-> closed. Both of the slave's blockers are answered in the `## Answer` block at the top of
-> `responses/slave.md`.
->
-> **Phase 3b below is struck and must not be attempted.** Master wrote it, master got it
-> wrong: it asked for the space to be removed *and* for behaviour to stay unchanged, which
-> are mutually exclusive. The slave was right to refuse rather than pick a side. Ruled as
-> (a) — the generator string is the defect, not the regex — and moved to T6 because the
-> real fix is choosing a replacement suffix and rewriting the regex to match, which is a
-> product decision. The text is retained only as the audit trail.
->
-> **One new task was born here:** the T3 pass widened the global `error_log level`
-> RadioGroup from 5 to 9 items with no `flex-wrap`, and it will clip (TASKS.md I22 /
-> decision A-D14). That is the next instruction, not a continuation of this one.
+Supersedes: delete the redundant casts / close the enums (ANSWERED @ `d72d8b2`)
 
 ## Goal
-Make the generator's input honest: delete 38 casts that are pure noise, and fix the
-three enums whose **values** are wrong so a generator can actually emit nginx text.
+The T3 pass widened the global `error_log level` control from 5 options to 9 and left it
+in a `flex` row with no wrap. Nine radio+label pairs cannot fit the space they are given,
+so they clip. Make it lay out correctly at every supported width.
 
 ## Read first
-- `agent-docs/CONTEXT.md` §4 (commands), §5 (state shape), §7 (known-bad — your worklist)
-- `agent-docs/TASKS.md` A-D11 (why the nesting is NOT in this instruction), A-D13, I9,
-  I17, I19
-- `src/pages/UIConfigPage/store/types.ts`
-- `src/pages/UIConfigPage/store/defaults.ts`
-- `src/pages/UIConfigPage/store/store.ts`
-- all 9 files in `src/pages/UIConfigPage/global-config/`
-- `src/pages/UIConfigPage/per-website-config/php-section.tsx`
-- `src/pages/UIConfigPage/per-website-config/logging-section.tsx`
-- `src/pages/UIConfigPage/per-website-config/index.tsx` (Phase 3 only)
+- `agent-docs/CONTEXT.md` §4 (commands), §7 (known-bad areas — the regression is at the
+  end), §5 (Rule 5 is binding: *responsive down to the smallest supported width*)
+- `agent-docs/TASKS.md` A-D14 (why this is a task and not a rounding error), I22
+- `src/pages/UIConfigPage/global-config/logging-section.tsx` — the control is at line 55-72
+- `src/components/SectionRow.tsx` — the container it sits in
+- `src/pages/UIConfigPage/per-website-config/logging-section.tsx:112-122` — the per-site
+  control for the same 9 values, for contrast
 
-**Three phases, strictly in order.** Phase 2's gate is Phase 1's deletions; Phase 3's
-gate is Phase 2's enums. If a phase blocks, **stop there** — do not skip ahead.
+**One phase. No phases after it. This is the whole instruction.**
 
-**Establish your own baseline first.** Run `npx tsc -b`, `npm run lint`, and count the
-casts:
+## The measured situation
+
+**Measured, not estimated.** Master drove the running dev server over CDP (Chrome
+headless, `Emulation.setDeviceMetricsOverride`) and read real geometry. Do not
+re-derive these numbers, and do not argue with them — they are `getBoundingClientRect`
+output.
+
+`global-config/logging-section.tsx:55-72`:
+
+```tsx
+<SectionRow label="error_log level">
+  <RadioGroup
+    value={errorLogLevel}
+    onValueChange={(v) => updateField("errorLogLevel", v)}
+    className="flex gap-4"
+  >
+    {ERROR_LOG_LEVELS.map((lvl) => (
+      <div key={lvl} className="flex items-center gap-2">
+        <RadioGroupItem value={lvl} id={`err-lvl-${lvl}`} />
+        <Label htmlFor={`err-lvl-${lvl}`} className="text-sm">{lvl}</Label>
+      </div>
+    ))}
+  </RadioGroup>
+</SectionRow>
+```
+
+| viewport | available width in the grid cell | content width | overflows? | clipped options |
+|---|---|---|---|---|
+| 1440 | 699 | 568 | no | — |
+| 1280 | 611 | 568 | no | — |
+| 1024 | 469 | 568 | **yes** | `alert`, `emerg` |
+| 768 | 328 | 568 | **yes** | `error`, `crit`, `alert`, `emerg` |
+
+Two corrections to master's earlier estimate, both from measurement:
+
+1. **It is 8 options, not 9.** `ERROR_LOG_LEVELS` (global) is the 8 upstream levels.
+   The 9th, `none`, belongs to `SITE_ERROR_LOG_LEVELS` (per-site only). The previous 5-item
+   version of this control was the upstream subset `debug…error`; `crit`, `alert` and
+   `emerg` are what the T3 pass added. The value set is **correct** — only the layout is
+   wrong.
+2. **It is worse than "may clip".** At 768 four of eight options are unreachable. The
+   page itself does *not* scroll (`documentElement.scrollWidth === window.innerWidth` at
+   every width tested), so the excess is contained inside the `RadioGroup`, which has no
+   `overflow` rule of its own. **The clipped options are not merely off-screen — they are
+   clipped with no way to reach them.** That is a functional defect, not a cosmetic one.
+
+Content width is a flat **568px** (8 pairs plus 7 × `gap-4`), so the control overflows
+whenever the grid cell drops below 568. The cell is `SectionRow.tsx:26`
+`grid grid-cols-4 gap-4 w-full` with the control in `FieldContent className="col-span-3
+w-full"` (`:53`) — three-quarters of the form width.
+
+Verified while measuring: `logging-section.tsx:61` is the **only** `className="flex
+gap-…"` row in all of `global-config/`, so this is isolated, not a repeated pattern.
+
+## What to change
+
+Change (only this file):
+- `src/pages/UIConfigPage/global-config/logging-section.tsx` — the `RadioGroup`
+  `className` at line 61.
+
+**Recommended fix: add `flex-wrap`.** One class. It is the smallest change that makes the
+control honest at narrow widths, introduces no new tokens, and matches how the rest of the
+form behaves.
+
+**Do not** switch the control type. The per-site equivalent
+(`per-website-config/logging-section.tsx:115`) is a native `<select>`, which cannot
+overflow at all — and swapping the global one to match would be the "right" answer to a
+question decision A-D12 explicitly deferred (native vs shadcn vs radio as the product
+standard). One decision, made once, when someone writes the next section. Not here, and
+not silently inside a layout fix.
+
+**But `flex-wrap` is *not* sufficient at phone widths — measured, and do not try to make it
+be.** The smallest supported width is now defined (decision A-D16): **a standard small
+smartphone, 360px CSS viewport.** Master injected `flex-wrap` at the DOM level and
+re-measured:
+
+| width | cell width | content | result with `flex-wrap` |
+|---|---|---|---|
+| 1024 | 469 | 568 | 2 rows — **fixed** |
+| 768 | 328 | 568 | 2 rows — **fixed** |
+| 390 | 46 | 568 | 8 rows, **still clipped** |
+| 360 | 32 | 568 | 8 rows, **still clipped** |
+
+At phone widths the *cell itself* is 32px, so one 66px option cannot fit no matter how it
+wraps. The cause is upstream of this file: the Workspace left panel is a fixed 200px, the
+Header's children total 788px, and `SectionRow`'s `grid-cols-4` then splits ~108px into an
+8px label and a 32px control. **All 12** field rows are affected and 4 are already clipped
+in sections you are not touching.
+
+That shell problem is **T15**, a separate task, and it is not yours. Do not fix it, do not
+open `Workspace.tsx`, `Header.tsx` or `SectionRow.tsx`, and do not add a breakpoint or a
+media query to compensate for it here.
+
+**Your job is exactly this:** stop the `error_log level` row clipping from 1024 down to
+768, which is where this defect actually lives and where one class is the whole fix.
+
+## Verification
+
+Run and report:
 
 ```
 npx tsc -b ; "TSC=$LASTEXITCODE"
 npm run lint ; "LINT=$LASTEXITCODE"
-(Get-ChildItem -Recurse src\pages\UIConfigPage -Filter *.tsx |
-  Select-String -Pattern '\bas (boolean|string)\b' -AllMatches).Count
+npm run build ; "BUILD=$LASTEXITCODE"
+git diff --stat
 ```
 
-Expect `TSC=0`, `LINT=0`, and **38**. Master re-verified the two exit codes and the
-count 38 on 2026-10-08. If any differ, say so in your response and work from what you
-actually observe.
+All three must exit 0.
 
----
+**A headless Chrome is available and master has already used it.** The dev server is at
+`http://localhost:5173/`. Do the same rather than reporting the layout as unverifiable —
+it is verifiable, and a pass that leaves it unverified when the tooling exists is a weaker
+deliverable. Zero-dependency route, ~30 lines, throwaway file in the temp dir:
 
-## Phase 1 — delete the 38 casts
+```
+Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+  -ArgumentList '--headless=new','--disable-gpu','--remote-debugging-port=9222',`
+                '--user-data-dir=<temp>\chrome-prof','about:blank'
+```
 
-**They are all redundant.** Every one is `useGlobalConfigStore((s) => s.field) as
-boolean` (or `as string`) where `field` is **already correctly typed** in `types.ts`.
-Grep-verified: **zero** casts sit on a union-typed field, so not one of them is doing
-any work.
+Then over the DevTools Protocol using Node 22's **built-in `WebSocket`** (no `ws` package,
+no Playwright — adding a dependency to answer a one-line CSS question is the wrong trade):
+fetch `http://127.0.0.1:9222/json/list` for the page target's `webSocketDebuggerUrl`,
+connect, then `Page.enable`, `Page.navigate`, `Emulation.setDeviceMetricsOverride` per
+width, and `Runtime.evaluate` the geometry probe.
 
-Change (only these files):
-- the 8 `global-config/*.tsx` files that contain them — `docker-section.tsx` (3),
-  `logging-section.tsx` (13), `nginx-section.tsx` (4), `performance-section.tsx` (7),
-  `python-section.tsx` (1), `reverse-proxy-section.tsx` (1), `security-section.tsx` (7),
-  `tools-section.tsx` (2)
+**Navigation, since it cost master a wasted round trip:** `TabSelector.tsx:35` renders
+`<li onClick>` with **no `role="tab"`**, so `[role=tab]` finds nothing and a helper that
+only searches `button, a, [role=tab], span, div` will report `Logging` as not found.
+Search `li` too. Click path: landing → button whose text is `Create New Config` →
+`UI Config` (Header) → `Logging` (global tab strip). Both `PerWebsiteConfigSection` and
+`GlobalConfigSection` render together at `UIConfigPage/index.tsx:19-20`.
 
-Do NOT:
-- **Do not nest anything.** Decision A-D11: the old plan said nesting would delete these
-  casts. That is false — `as boolean` on a `boolean` is legal whether or not the parent
-  is nested, so all 38 would survive a nest. They go because they are redundant, and the
-  diff is a pure deletion.
-- Do not touch `types.ts` in this phase. If deleting a cast makes `tsc` red, that cast
-  was load-bearing — report which field and stop, because that is a real typing bug.
-- Do not reformat. Many are on their own line after prettier wrapped the selector; a
-  collapsed one-liner is a natural consequence of deleting the cast, not a style pass.
+Assert numerically, not visually — clip is a geometry problem, so measure it:
 
-Acceptance:
-- [ ] Cast count is **0** across `src/pages/UIConfigPage` (it is 38 before you start)
-- [ ] `npx tsc -b` exits 0
-- [ ] `git diff --stat` shows **only deletions** in those 8 files plus incidental
-      re-wrapping — quote it
-- [ ] No `types.ts` change, no store change, no new file
+```js
+const first = document.querySelector('#err-lvl-debug');
+const group = first.closest('[role=radiogroup]') || first.parentElement;
+const g = group.getBoundingClientRect();
+const kids = [...group.children].map(k => k.getBoundingClientRect());
+// PASS when: no kid.right > g.right + 1, and group.scrollWidth <= group.clientWidth + 1
+```
 
-Ponytail check — rung 1, the whole phase: 38 lines of code that do nothing, deleted.
-No new types, no helpers, no nesting. This is the cheapest phase in the instruction.
+Screenshots are useful evidence to *attach*; they are not the assertion. Report the numbers.
 
----
+## Acceptance
 
-## Phase 2 — close the three enums the generator cannot expand
+- [ ] No option is clipped at **1024 and 768** — **measured**, with the numbers quoted
+- [ ] Report the 360/390 numbers too, and state plainly that they are **still broken** and
+      why (the 32px cell is T15's problem, not yours). Do not claim the control is fixed
+      at phone widths; it is not, and saying so is part of the deliverable.
+- [ ] `npx tsc -b`, `npm run lint`, `npm run build` all exit 0
+- [ ] `git diff --stat` shows **one file, one line** (plus incidental diff noise). Quote it
+- [ ] `Workspace.tsx`, `Header.tsx`, `SectionRow.tsx` untouched — T15 owns those
+- [ ] No file under `src/components/ui/**` touched
+- [ ] No new dependency, no new file **in the repo**, no new token
+- [ ] Layout re-verified **after** the change, not before it
 
-Runs after: Phase 1 reports cast count 0 and `tsc -b` exit 0. **These are value bugs,
-not typing bugs** — a closed type is worthless if the values behind it are wrong.
+Ponytail check — rung 6, one line before fifty: this is one CSS class. It is worth a pass
+only because it is a live Rule 5 failure and it needed measuring. If you find yourself
+adding a wrapper div, a container query, or a responsive breakpoint to solve this, stop —
+the fix is one class and your solution is now more complex than the problem.
 
-**2a — `phpServer` / `phpBackupServer` hold invented keys, not socket paths.**
-`per-website-config/php-section.tsx:47-55` and `:82-90` offer
-`php-fpm.sock`, `php7.4-sock` … `php8.3-sock`, `custom`, `hhvm`, `tcp`. Upstream emits
-`fastcgi_pass unix:/var/run/php/php7.2-fpm.sock` (see `docs/competitive-options.md`
-§1b item 3). **A generator cannot expand `php8.2-sock` into that string.** The option
-values must become real `fastcgi_pass` targets. Both `phpServer` and `phpBackupServer`
-are bare `string` at `types.ts:28,30`.
-
-  Decide and state: do the `<option>` values become full paths
-  (`unix:/var/run/php/php7.2-fpm.sock`) or short keys plus a mapping? **Recommend full
-  paths** — a mapping is a lookup table the generator must carry forever, and a key that
-  is *also* the emitted string has one source of truth. Then give `phpServer` a closed
-  union type matching whatever the options actually are. `hhvm` and `tcp` do not name
-  socket paths — if you keep them, they need real values (`hhvm` is
-  `unix:/var/run/hhvm/hhvm.sock`; `tcp` is a `host:port`, not a path) or they should go.
-  `phpServerCustom` already exists for the escape hatch — use it rather than inventing a
-  new mechanism.
-
-**2b — `referrerPolicy` is a bare `string`.** `types.ts:118`.
-`global-config/security-section.tsx:44-52` renders 8 values from an inline array.
-Give it a closed union of exactly those 8, and **export the union** so the array and
-the type cannot drift apart. Note for the generator (do not implement it): upstream
-emits this as a `map $uri $ref_policy { … }` keyed on `wp-admin|wp-login|xmlrpc.php`,
-**not** as a plain `add_header` — `docs/competitive-options.md` §1b item 3.
-
-**2c — `errorLogLevel`'s type is behind its own UI.** `types.ts:147` says
-`debug|info|notice|warn|error`. `per-website-config/logging-section.tsx:116-123` already
-renders **nine** options — it includes `crit`, `alert`, `emerg`. The per-site
-`errorLogLevel` (`types.ts:66`) also needs `none` per upstream. Widen both to the full
-upstream set; do not narrow the UI to match the weaker type.
-
-Change (only these files): `store/types.ts`, `store/defaults.ts` (only if a default
-becomes invalid), `per-website-config/php-section.tsx`,
-`per-website-config/logging-section.tsx`, `global-config/security-section.tsx`.
-
-Do NOT:
-- Do not touch `sslProfile`, `proxyCoexistenceXForwarded`, or the `ocsp*Type` fields —
-  those are already closed unions. Verified.
-- Do not touch `workerProcesses` / `typesHashMaxSize` / `typesHashBucketSize`. CONTEXT.md
-  and `docs/competitive-options.md` list them as bare `string`; they are typed `string` /
-  `number` at `types.ts:161,167,168` and are **not** blocking anything. Leave them.
-- Do not nest `GlobalConfigState` (A-D11).
-- Do not add a `SelectOption` component, an enum-to-options registry, or a generic
-  `<EnumSelect>`. One shared union per enum, referenced from both sides, is enough.
-
-Acceptance:
-- [ ] `phpServer` is a closed union whose every member is a literal the generator could
-      emit into `fastcgi_pass` — quote the union and the `<option>` list side by side
-      and confirm they match exactly
-- [ ] `referrerPolicy` is a closed union of the same 8 values the UI renders, and the
-      UI's array is derived from the type rather than restating it
-- [ ] `errorLogLevel` (both global and per-site) covers all 9 upstream levels, plus
-      `none` per-site
-- [ ] `npx tsc -b` exits 0, `npm run lint` exits 0
-- [ ] No `<option>` value anywhere is a key that is not also the emitted string
-
-Ponytail check — rung 2 (reuse what's here): every one of these is a type annotation on
-a field that already exists, plus correcting values in option lists already on screen.
-No new files, no new components. The one thing that could turn this into over-building
-is a generic enum-select abstraction — resisted deliberately.
-
----
-
-## Phase 3 — fix the default drift, and delete the dead CSS file
-
-Runs after: Phase 2 reports `tsc -b` exit 0 and both enums closed.
-
-**3a — defaults in `store/defaults.ts` are wrong, not merely different** (issue I9,
-`docs/competitive-options.md` §5 item 5). Correct them to upstream:
-
-| field | ours | upstream |
-|---|---|---|
-| `modularizedStructure` | `false` | `true` |
-| `symlinkVhost` | `false` | `true` |
-| `clientMaxBodySize` | `1` | `16` |
-| `redirectSubdomains` (per-site, `defaults.ts`) | `false` | `true` |
-| `assetsExpiration` / `mediaExpiration` / `svgExpiration` / `fontsExpiration` | `max` | `7d` |
-| `accessLogParameters` (per-site) | `combined` | `buffer=512k flush=1m` |
-
-**3b — STRUCK. DO NOT ATTEMPT.** (issue I17, ruled in `responses/slave.md` `## Answer`)
-
-~~`getNextDomain`'s regex works by accident. Fix the stray space.~~
-
-Withdrawn by master. The original text asked for two things that cannot both hold: delete
-the space in `` `^${base}( \\((\\d+)\\))?$` `` **and** keep behaviour unchanged. The space
-is what matches `` `${base} (${next})` `` — the exact string the function generates at
-`index.tsx:63`. Removing it makes `example.com (1)` fail to match, so `usedNumbers` never
-sees the taken name and **every site added after the first silently duplicates to
-`example.com (1)`.**
-
-Ruled **(a): the generator string is the defect**, because T6 will emit
-`example.com (1)` into a real `server_name`. But the fix is not this one character — it is
-choosing the replacement suffix *and* rewriting the regex to match it. Two places, one
-product decision, generator-phase work. **Moved to T6 (`TASKS.md` I17). Leave
-`index.tsx` exactly as it is.**
-
-**3c — delete `src/App.css`** (issue I19). Grep-verify first that nothing imports it
-(`src/main.tsx`, `index.html`, anywhere in `src/`) — master found zero references, but
-confirm. If anything *does* reference it, stop and report instead of deleting.
-
-Acceptance:
-- [ ] All 8 defaults above corrected, and `tsc -b` + `lint` still exit 0
-- [ ] `getNextDomain` still returns `example.com (1)`, `(2)`, … for base `example.com` —
-         show the reasoning (one regex, one expected output per case)
-- [ ] `src/App.css` deleted, nothing else deleted
-- [ ] `npm run build` exits 0
-
-Ponytail check — rung 1: 3a is 8 wrong values corrected in place, 3b deletes one
-character of accidental escaping, 3c deletes a file. Net strongly negative. No new file.
-
----
-
-## Do NOT (applies to every phase)
+## Do NOT
 
 - **Never run a mutating git command.** No commit, merge, rebase, pull, push, stash,
   checkout, tag, or `git mv`. Read-only `git status` / `git diff` / `git show` are fine.
-- **Do not nest `GlobalConfigState`.** A-D11. It would touch 189 `updateField` call
-  sites and delete none of the 38 casts. If you think the nesting is genuinely required,
-  that is a **blocker** — write it up and stop, do not do it.
 - Do not edit anything under `src/components/ui/**`.
-- Do not add a test runner. If you want a check, the cheapest honest option is one
-  `console.assert` block you delete before finishing, or a throwaway script under the
-  temp dir — not a Vitest dependency.
-- Do not enforce the gating or mutual exclusion (CF fields gate on `cloudflare`,
-  `symlinkVhost` on `modularizedStructure`, PHP vs Python vs reverse-proxy exclusion).
-  That is real work and belongs to the generator task (T6), which is blocked on this one.
-- Do not run `npm update`, `npm install`, or bump any dependency. A-D7 holds
-  `typescript` and `@babel/core` at their current majors.
-- Do not unify the native `<select>` and the shadcn `Select`. A-D12 — decided deferred.
-- Do not touch `CodeConfigPage`, `VisualConfigPage` or `AnalyticsPage`. They are
-  hardcoded placeholders; rewiring them is T8/T10/T11.
-- Do not reformat or reorder code you pass through. This is three small corrections, not
-  a style pass.
-- Do not start the generator (T6). This instruction only makes its *input* honest.
-
-## New issues you may find
-
-Write them in your response's `## New issues / edge cases` section. Do not fix them.
-Two already known and deliberately left: `limitReq` is a bare boolean with no
-zone/rate/burst fields at all, and `dockerTweaks` is a dead checkbox (upstream makes it a
-button that mutates three fields). Both are generator-phase work.
+- Do not change the control type, the option list, `ERROR_LOG_LEVELS`, or the number of
+  levels. The 9 levels are correct — upstream has 8 plus per-site `none`, and the type and
+  the UI were deliberately brought into agreement in T3 (A-D14). **The value set is right;
+  only its layout is wrong.**
+- Do not touch `per-website-config/logging-section.tsx`. It is a `<select>`; it cannot
+  overflow and it is not broken.
+- Do not add a dependency or a screenshot/browser tool.
+- Do not "improve" the neighbouring Cloudflare checkbox rows while you are in the file.
+- Do not start feature work. T14 exists because a real defect outranks the feature queue.
