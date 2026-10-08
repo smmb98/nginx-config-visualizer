@@ -11,11 +11,12 @@ Context lives in `CONTEXT.md`. Open questions live in `BLOCKERS.md`.
 | id | Task | Milestone | Status |
 |---|---|---|---|
 | T1 | Landing page + 4-tab shell + reset + zustand store | 1 | DONE |
-| **T2** | **Build + lint green** | — | **IN PROGRESS** — reissued, 3 phases |
-| T2a | Casing fix: `src/Components` → `src/components` (21 of 34 TS errors) | — | → Phase 1 |
-| T2b | Fix the 13 real TS errors across 6 files | — | → Phase 1 |
-| T2c | Lint green: scoped `ui/**` override + `use-mobile.ts` | — | → Phase 2 |
-| T3 | Nest `GlobalConfigState` + close enum types + fix default drift | 7 | TODO (next) |
+| **T2** | **Build + lint green** | — | **DONE** @ `61204fe` — verified by master |
+| T2a | Casing fix: `src/Components` → `src/components` (21 of 34 TS errors) | — | DONE — disk rename, zero git churn |
+| T2b | Fix the 13 real TS errors across 6 files | — | DONE |
+| T2c | Lint green: scoped `ui/**` override + `use-mobile.ts` | — | DONE |
+| **T3** | **Delete 38 redundant casts + close the 3 blocking enums + default drift** | 7 | **TODO (next)** — re-scoped by A-D11 |
+| T3x | ~~Nest `GlobalConfigState`~~ | 7 | **DEFERRED** — false premise, see A-D11 |
 | T4 | Presets — **collapsible panel**, per A-B5 | 7 | TODO |
 | T4s | Presets **sample** mockup (tab-strip variant) under `docs/` | — | TODO |
 | T5 | Setup sections: Download / SSL / Certbot / Go live | 8 | TODO |
@@ -32,6 +33,67 @@ Context lives in `CONTEXT.md`. Open questions live in `BLOCKERS.md`.
 Milestone 2 (`FileTree`, `/etc/nginx` tree, `createNewConfig`, `importFiles`) and
 Milestone 7 (`UIConfigPage` sections) are physically present but untracked by
 `CHECKLIST.md`. Treat as partial: present, not yet wired to anything downstream.
+
+### A-D11 — 2026-10-08 — Do **not** nest `GlobalConfigState`; the old T3 rested on false premises
+**Question:** CONTEXT.md and `docs/competitive-options.md` §5 item 2 both said the flat
+60-field `GlobalConfigState` must be nested before the generator can be written,
+because (a) it deletes the 38 `as boolean`/`as string` casts and (b) it gives
+`updateField` dotted paths.
+
+**Decision: no. Both justifications are false, measured on 2026-10-08.**
+
+**Why (a) fails:** every one of the 38 casts is
+`useGlobalConfigStore((s) => s.field) as boolean` — a cast on a selector reading a field
+that is **already correctly typed**. Grep-verified: **zero** casts sit on a union-typed
+field. They are pure redundancy and can be deleted today, with or without nesting.
+Nesting would leave all 38 in place, because `as boolean` on a `boolean` is legal
+whether or not the parent object is nested. The claimed causal link does not exist.
+
+**Why (b) fails:** `updateField` has **189 call sites** across the 9 `global-config`
+sections, every one a flat key. Dotted paths would mean editing all 189 to buy nothing:
+the generator **reads** the state object, it does not write it field-by-field. Dotted
+paths are a writer-side convenience this codebase does not need.
+
+**So T3 is re-scoped** into what actually blocks the generator, and the nesting is
+deferred. The real blockers are the three enums whose *values* are wrong — `phpServer`
+holds invented keys (`php8.2-sock`, `hhvm`, `tcp`) that cannot expand into a real
+`fastcgi_pass unix:/var/run/php/php7.2-fpm.sock`; `referrerPolicy` is a bare `string`
+and upstream emits it as a `map $uri` block; `errorLogLevel` is typed to 5 levels while
+its own UI already renders 9 (`crit|alert|emerg` missing). Those are data fixes, and
+they are cheap. The nesting is a 189-site diff buying symmetry — not now.
+
+**Revisit when:** a *second writer* of individual global fields appears that needs
+dotted paths. Presets (T4) are the first candidate, and they write whole sections, not
+individual fields, so they likely will not trigger it either.
+
+### A-D12 — 2026-10-08 — Leave the native-vs-shadcn `Select` split; it is per-screen consistent
+**Question (S-I2 from the T2 response):** `global-config/{nginx,security}-section.tsx`
+use the radix `Select` composite; `per-website-config/{php,routing,logging}-section.tsx`
+now use native `<select>`. Same height, same tokens, different popup. Unify?
+
+**Decision: not now.** Unifying means rewriting working native markup into radix
+composites (or vice-versa) across 5 files, and the two families are consistent *within*
+each screen — a user never sees both in one view. It is not currently a defect a user
+can feel.
+
+**Why defer rather than fix:** the deciding question is "which is the product standard",
+and that answer should be given once, by whoever writes the *next* section — at that
+moment the cost of matching it is one file, versus five files today for no felt gain.
+
+**Revisit when:** a new section is added, or a human reports the popups looking
+inconsistent. Then pick one and make it the rule.
+
+### A-D13 — 2026-10-08 — `addSite`'s shallow `Partial<Site>` stays until presets need it
+**Question (S-I1):** `addSite(site?: Partial<Site>)` is shallow, so changing one site
+field requires spreading a whole seed section. `DeepPartial` or an
+`addSite({ domain })` overload?
+
+**Decision: no change now.** One call site exists and it works — the presets pass is
+the first caller that will want several overridden fields at once, and that pass is the
+right place to settle the signature, with a second caller in hand.
+
+**Why:** ponytail rung 1 — it does not need to exist yet, and a `DeepPartial` helper is
+a new type used once. Rule 4's "add when the second caller appears" applies.
 
 ### Sequence change, 2026-10-08 (second session)
 
@@ -196,16 +258,21 @@ complete — the gaps are Presets, Setup, and the NPM-only entities.
 
 | id | Symptom | Where | Status |
 |---|---|---|---|
-| I1 | `npm run build` fails, 34 TS errors | 21 are casing, 13 real | open → T2a/T2b |
-| I2 | `npm run lint` fails, 13 errors | `components/ui/*` (currently `Components/`), `hooks/use-mobile.ts` | open → T2c |
+| ~~I1~~ | ~~`npm run build` fails, 34 TS errors~~ | — | **FIXED → I13** |
+| ~~I2~~ | ~~`npm run lint` fails, 13 errors~~ | — | **FIXED → I14** |
+| I8 | `GlobalConfigState` is a flat 60-field bag; `Site` is nested | `UIConfigPage/store/types.ts:100-179` | **DEFERRED — A-D11, false premise** |
+| I9 | Enum types bare `string` or truncated; `phpServer` holds fake keys not socket paths | `types.ts`, `php-section.tsx:47-55` | open → T3 |
 | I3 | `CodeConfigPage` hardcodes its config; Format/Save do nothing | `pages/CodeConfigPage.tsx` | open → T8 |
 | I4 | `VisualConfigPage` is hand-drawn SVG, no data | `pages/VisualConfigPage.tsx` | open → T10 |
 | I5 | `AnalyticsPage` health score is `const 85` | `pages/AnalyticsPage.tsx` | open → T11 |
 | I6 | Form store and app store are disconnected — nothing generates or parses nginx | `src/store` ↔ `pages/UIConfigPage/store` | open → T6/T7 |
 | I7 | 4 unused setters: `setParsedConfig`, `setSyntaxErrors`, `setSecurityAudits`, `setHealthScore` | `store/useAppStore.ts` | open → T7 |
-| I8 | `GlobalConfigState` is a flat 60-field bag; `Site` is nested | `UIConfigPage/store/types.ts:100-176` | open → T3 |
-| I9 | Enum types bare `string` or truncated; `phpServer` holds fake keys not socket paths | `types.ts`, `php-section.tsx` | open → T3 |
 | I10 | ~~Committed mojibake in 3 files~~ | — | **CLOSED — never existed** |
+| I15 | 4 native `<select>` vs shadcn `Select` across the form | `per-website-config/{php,routing,logging}-section.tsx` | open → **A-D12**, deferred |
+| I16 | `addSite` needs a whole `SiteServerConfig` to change one field | `store/store.ts:21`, `types.ts:187` | open → **A-D13**, deferred to T4 |
+| I17 | `getNextDomain` regex has a stray space; works by accident | `per-website-config/index.tsx:48` | open, trivial |
+| I18 | `ui/carousel.tsx:96` calls `setState` in an effect; hidden by override | `components/ui/carousel.tsx:96` | open — correct while unrendered |
+| I19 | `src/App.css` is dead — zero references | `src/App.css` | open → fold into T3 |
 | I11 | 9 dependency packages have zero imports in `src/`; `reactflow` never imported | `package.json` | open → T10 |
 | I12 | No gating and no mutual exclusion between PHP / Python / reverse proxy | 18 section files | open → T6 |
 | I13 | 14 documented conditional dependencies unenforced (CF log fields, `symlinkVhost`, …) | 18 section files | open → T6 |
@@ -221,7 +288,31 @@ phase was deleted rather than left to burn a pass chasing a phantom.
 
 ## ISSUES FIXED
 
-_None yet. First fix lands with T2._
+### I13 — 2026-10-08 — `tsc -b` exit 0 (was 34 errors)
+**Root cause:** two causes, wildly different sizes. 21 errors were one bug — the
+working tree said `src/Components` while the git index and every alias said
+`src/components`, so `tsconfig.app.json`'s `include: ["src"]` pulled each file into the
+program twice under two spellings (`TS1261`/`TS1149`). The other 13 were real and local:
+a self-referencing object literal in `store.ts`, a stray top-level `domain` key in
+`defaults.ts` masking a second `certType` widening fault, and 4 `Select` call sites
+typed as the shadcn composite but written as native `<select>`/`<option>`.
+**Fix:** two-step `Rename-Item` on disk (a one-step case-only rename is a no-op on a
+case-insensitive filesystem) — **zero git churn, proving the index was already correct**.
+Then import/ordering/narrowing fixes in 6 files, each at source. No `any`, no `as`, no
+`@ts-ignore`. Verified: `npx tsc -b` → 0, `npm run build` → 0.
+
+### I14 — 2026-10-08 — `npm run lint` exit 0 (was 13 errors)
+**Root cause:** 11 of 13 were the linter complaining about **generated** shadcn
+primitives (`react-refresh/only-export-components`, plus one `set-state-in-effect` in
+`ui/carousel.tsx:96`) — hand-editing vendored code to satisfy an HMR rule is backwards
+and the next `shadcn add` overwrites it. One was a real hook whose `useState`+effect
+shape fought the rule. One (`FileTree.tsx:15`, a ternary used as a statement) was not in
+the instruction at all.
+**Fix:** one 8-line scoped eslint override for `src/components/ui/**` (two rules, one
+glob, no code touched), `use-mobile.ts` rebuilt on `useSyncExternalStore` — which is
+what the hook actually is, a media-query subscription, and which also made it correct on
+the first paint — and one ternary → `if/else`. Net: +8 lines of config, −12 lines of app
+code. Verified: `npm run lint` → 0, `tsc -b` still 0, `build` still 0.
 
 ---
 
@@ -229,7 +320,24 @@ _None yet. First fix lands with T2._
 
 | slot | title | status | structure |
 |---|---|---|---|
-| `instructions/slave.md` | build hygiene (reissued) | OPEN | 2 sequential phases |
+| `instructions/slave.md` | build hygiene (reissued) | **DONE** | 2 sequential phases — both green |
+| `instructions/slave.md` | casts + enum closure + default drift | **OPEN** | 3 sequential phases (T3, re-scoped) |
+
+Closed by the second issue:
+
+- **Phase 1 grew.** It previously named 2 files and 4 errors. It now covers 6 files and
+  all 34 errors, because 21 of them were one casing bug misfiled as "shadcn primitives
+  and path-alias resolution noise" in the old `CONTEXT.md` §7.
+- **The old third phase (mojibake) was deleted** — its premise was false, see I10.
+- **The casing fix was specified as a filesystem rename, not `git mv`.** Measured: the
+  git index already spelled all 62 paths `src/components/` (lowercase) while the working
+  tree was `src/Components`. The *disk* was wrong, so a plain two-step rename agrees them
+  with **zero git churn** — and needs no commit from the human, satisfying Rule 1 by not
+  using `git mv` at all.
+
+Issued 2026-10-08 (third session). T3 re-scoped by A-D11 — the two-phase build-hygiene
+shape was kept, but the *content* of what it fixes changed: 3 phases now, and the
+nesting is gone.
 
 Reissued 2026-10-08 (second session). Same goal as the previous issue, but the phase
 list changed materially after measurement:

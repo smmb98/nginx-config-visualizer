@@ -137,11 +137,22 @@ Consequences, all binding on T6/T7/T8:
 
 **Blocks T6, T7 and T8.** T2, T3, T4 and T5 are unaffected.
 
-### B4 — Should the 4 unused setters and the `NginxConfig.ast: unknown` shape be
-redesigned before anything calls them?
-`setParsedConfig` / `setSyntaxErrors` / `setSecurityAudits` / `setHealthScore` exist
-with no callers, and `ast` is `unknown`. Building T4 against an untyped `unknown` AST
-means guessing the node shape twice. Worth pinning the AST type first?
+### B10 — Does the global state have to be nested before the generator? **ANSWERED — NO**
+**Question:** CONTEXT.md §7, `docs/competitive-options.md` §5 item 2 and BLOCKERS B2b
+all asserted the flat 60-field `GlobalConfigState` must be nested before T6 could be
+written, on two grounds: it deletes the 38 casts, and it gives `updateField` dotted
+paths.
+
+**→ ANSWERED 2026-10-08: no. Both grounds are false.** Measured:
+
+- All 38 casts are on selectors reading **already-correctly-typed** fields, and zero sit
+  on a union type. `as boolean` on a `boolean` is legal nested or flat, so a nest leaves
+  all 38 standing.
+- `updateField` has **189 call sites**, every one a flat key. Dotted paths mean editing
+  all 189 to serve a generator that only *reads* state.
+
+Recorded as A-D11; T3 re-scoped to the three enums whose values are genuinely wrong.
+Reopen when a second writer of individual global fields appears.
 
 ### B5 — `docs/design.md` vs `src/index.css`: which is authoritative?
 `docs/design.md` describes a palette; `src/index.css` holds the actual tokens. They
@@ -174,6 +185,12 @@ omission.
 ---
 
 ## ANSWERED
+
+### A-B7 — Nesting the global state: measured, and it is not worth it
+**Question (B10):** must `GlobalConfigState` be nested before the generator?
+**Decision:** no — A-D11 in `TASKS.md`. The 38 casts are redundant today and go by
+deletion, not by nesting; dotted paths would cost 189 call-site edits to serve a
+generator that only reads state. **Reopen when a second writer appears.**
 
 ### A-B1 — Shadcn lint rule: override, do not edit generated files
 **Why:** hand-editing vendored shadcn primitives to satisfy an HMR lint rule is

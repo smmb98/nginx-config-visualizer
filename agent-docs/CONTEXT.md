@@ -4,7 +4,9 @@ Read this file first. It is the handoff state. If a fact here is wrong, fix it i
 same change that makes it wrong. A session that cannot rebuild the app from this file
 alone has failed its main duty.
 
-Last verified: 2026-10-08, branch `implementation` @ `b835b0d`.
+Last verified: 2026-10-08, branch `implementation` @ `61204fe`. **Build, lint and
+typecheck are all green** — see §4. This corrects §3/§4/§7/§9, which still described
+T2 as unfinished.
 
 ---
 
@@ -85,9 +87,11 @@ src/
 ```
 
 Import alias: `@` → `src` (also `@components`, `@lib`, `@hooks`, `@shadcn-ui`).
-Note the **capital-C `Components`** directory while the alias points at lowercase
-`./src/components` — works on Windows, will break a case-sensitive CI. Flagged as a
-known issue, not yet fixed.
+**The casing bug is fixed:** the directory is `src/components` (lowercase), matching the
+alias and the git index. The rename was done on disk only (`Rename-Item`, two-step —
+a one-step case-only rename is a no-op on a case-insensitive filesystem) and produced
+**zero git churn**, which is the proof the index was already correct. Never use
+`git mv` for this.
 
 ---
 
@@ -95,11 +99,14 @@ known issue, not yet fixed.
 
 ```bash
 npm run dev       # vite dev server
-npm run build     # tsc -b && vite build   -- CURRENTLY FAILS, see §7
-npm run lint      # eslint .               -- CURRENTLY FAILS, see §7
-npx tsc -b        # typecheck only
+npm run build     # tsc -b && vite build   -- GREEN (verified 2026-10-08, exit 0)
+npm run lint      # eslint .               -- GREEN (verified 2026-10-08, exit 0)
+npx tsc -b        # typecheck only         -- GREEN (verified 2026-10-08, exit 0)
 npm run preview   # serve the production build
 ```
+
+`dist/` is gitignored — a successful build adds nothing to `git status`, which is
+expected, not a missing artifact.
 
 There is no test command and no test runner. If a task needs a check, the cheapest
 honest option today is a single assert-based script; do not add Vitest for one test.
@@ -266,32 +273,54 @@ break anything.
 
 ## 7. Known-bad areas — do not assume these work
 
-**Build and lint are red right now.** Do not report a change as verified without
-running them, and do not be alarmed by pre-existing failures:
+**Build, lint and typecheck are GREEN.** Re-verified independently by master on
+2026-10-08 @ `61204fe`: `npx tsc -b` → 0, `npm run lint` → 0, `npm run build` → 0.
+Do not re-report these as broken. What T2 actually changed:
 
-- `npx tsc -b` → **34 errors**, and the distribution matters:
-  - **21 of 34 are `TS1261`/`TS1149` — one bug.** The working tree has `src/Components`
-    (capital C); git tracks `src/components`, and `vite.config.ts` aliases `@components`
-    → `./src/components`. `tsconfig.app.json` includes `src`, so both spellings enter the
-    program and tsc reports each file twice. This is **red on Windows right now**, not a
-    "will break on Linux CI" nit as previously recorded. One
-    `git mv src/Components src/components` (git is human-run; we never touch git) clears
-    21 errors.
-  - `src/pages/UIConfigPage/store/store.ts:35` — `TS2448`/`TS2454`: `newSite` is
-    referenced inside the object literal that declares it; `TS2339` ×2: `site.domain`
-    does not exist on `Partial<Site>` (the domain lives at `site.server.domain`).
-  - `src/pages/UIConfigPage/per-website-config/index.tsx:70` — `TS2353`: same
-    `domain`-on-`Partial<Site>` mistake at the `addSite` call site.
-  - `src/pages/UIConfigPage/store/defaults.ts:163` — `TS2322`: `certType` widens to
-    `string`, needs `as const` or an explicit literal type.
-  - `src/pages/UIConfigPage/per-website-config/logging-section.tsx:111,124` — `TS2552`:
-    `Select` is used but never imported; `:113` `TS7006` implicit `any` follows from it.
-  - `per-website-config/{php-section,routing-section}.tsx` — `TS2322` ×3 on
-    `onValueChange={(v) => …}` against a `Select` whose children carry no `value` prop.
-  - The remainder are shadcn `ui/` primitive noise.
-- `npm run lint` → **13 errors**: ~11 are
-  `react-refresh/only-export-components` inside generated `src/Components/ui/*`
-  files, plus `react-hooks/set-state-in-effect` in `src/hooks/use-mobile.ts`.
+- **The casing rename** `src/Components` → `src/components`, disk-only via
+  `Rename-Item` (two-step; a single case-only rename is a no-op on Windows). Cleared
+  21 of the 34 TS errors and produced **zero git churn** — the index already spelled
+  the paths lowercase, so the *disk* was the thing that was wrong.
+- **`store/store.ts`** — removed a self-referencing `newSite`, hoisted a repeated
+  `DEFAULT_STATE.sites[0]` seed, and dropped the duplicate flat-`domain` parameter.
+  `addSite` now takes a plain `Partial<Site>`.
+- **`store/defaults.ts`** — deleted the stray top-level `domain` key (grep-verified zero
+  readers; every real read is `site.server.domain`) and annotated `const DEFAULT_SITE:
+  Site` so the compiler checks the whole literal.
+- **4 `Select` sites in `per-website-config/{php,routing,logging}-section.tsx`** were
+  **native `<select>` with `<option>` children typed as the shadcn `Select`**. The
+  slave chose native (rung 4 over rung 2 — a static list of 5–9 strings does not need
+  a radix composite) and styled them to the same `h-8` / `border-input` tokens so they
+  match the neighbouring shadcn selects in height.
+- **`eslint.config.js`** — one scoped override: `files: ['src/components/ui/**']`,
+  turning off `react-refresh/only-export-components` and
+  `react-hooks/set-state-in-effect`. Nothing under `ui/**` was edited. Correct per
+  decision A-B1: they are generated files.
+- **`hooks/use-mobile.ts`** — rewritten on `useSyncExternalStore` (it is a media-query
+  subscription, not local state). Side benefit: correct on the first paint, so no
+  desktop-first-paint `false` flash.
+- **`components/FileTree.tsx:15`** — ternary-used-as-statement rewritten as `if/else`.
+  This file was **not** in the instruction; it was a real lint error no config override
+  could honestly absorb.
+
+**Known leftovers from T2** (carried into T3's scope, all recorded in `TASKS.md`):
+
+- **4 native `<select>` vs shadcn `Select` across the form.** `global-config/{nginx,
+  security}-section.tsx` use the radix composite; `per-website-config/{php,routing,
+  logging}-section.tsx` use native. Consistent *within* each screen, not across the app.
+  The popups differ (OS-styled vs app-styled). One decision, not yet made.
+- **`addSite` needs a whole `SiteServerConfig` to change one field.** `Partial<Site>` is
+  shallow, so the single call site spreads `DEFAULT_STATE.sites[0].server`. Works today;
+  a trap for the presets pass. `DeepPartial` or an `addSite({ domain })` overload are both
+  `types.ts` shape changes.
+- **`getNextDomain`'s regex has a stray space** — `index.tsx:48`
+  `` `^${base}( \\((\\d+)\\))?$` `` — so `( \\(` means "space then literal paren". It works
+  by accident, matching only the exact form it generates. Do not mistake it for
+  intentional escaping.
+- **`ui/carousel.tsx:96` still calls `setState` synchronously in an effect**, hidden by
+  the override. Correct today (`carousel` is unrendered); would be a real cascading
+  render if someone renders it.
+- **`src/App.css` is dead** — zero references from `src/main.tsx` or `index.html`.
 
 **Placeholder UI (looks finished, is not wired):** `CodeConfigPage` (hardcoded config,
 `isValid` frozen `true`, Format/Save buttons do nothing), `VisualConfigPage`
@@ -299,14 +328,38 @@ running them, and do not be alarmed by pre-existing failures:
 `global-config/*` and `per-website-config/*` section (they bind to the generator
 store, which nothing reads).
 
-**State-shape defect (the one that matters for modularity/SOLID):**
-`GlobalConfigState` (`store/types.ts:100-176`) is a **flat 60-field bag** — HTTPS,
-Security, Logging, NGINX, Docker and Tools fields all sit at the same level, separated
-only by `// HTTPS section` comments — while `Site` in the same file is properly nested
-into 10 objects. Two consequences already visible in the tree: 38 `as boolean` /
-`as string` casts across the section components (22 + 16), and `updateSiteField` supports
-dotted paths (`"https.certType"`) while `updateField` does not. The generator function
-(Task 2) reads this bag directly, so nesting it is a prerequisite, not a cleanup.
+**State-shape defect — RE-SCOPED, the old framing was wrong.**
+`GlobalConfigState` (`store/types.ts:100-179`) **is** a flat 60-field bag while `Site`
+in the same file is nested into 10 objects. That much is real. But master re-measured
+the two justifications on 2026-10-08 and **both failed**:
+
+1. *"Nesting deletes the 38 casts."* It does not. All 38 are
+   `useGlobalConfigStore((s) => s.someField) as boolean` — casts on selectors reading
+   fields that are **already correctly typed** (`dockerfile: boolean`, `gzipCompression:
+   boolean`). Grep-verified: **zero** casts sit on a union-typed field. The casts are
+   redundant today, flat or nested. **They can be deleted right now for free.**
+2. *"The generator needs dotted paths."* It does not. `updateField` is called **189
+   times** across the 9 `global-config` sections, every one a flat key. Dotted paths
+   would require editing all 189 call sites to buy nothing the generator needs — it
+   *reads* the state object, it does not write it field-by-field.
+
+So nesting is **not** a generator prerequisite and is **not** free. It is a large,
+high-churn diff whose only real benefit is symmetry with `Site`. Decision A-D11 splits
+T3: the casts and enums (cheap, genuinely blocking) go now; the nesting (cosmetic,
+touching 189 call sites) is **deferred until something actually needs it**.
+
+**What the generator genuinely cannot do yet — the real T3 blockers:**
+- `phpServer` holds invented keys (`php8.2-sock`, `hhvm`, `tcp`), not real
+  `fastcgi_pass` targets. Upstream emits `fastcgi_pass unix:/var/run/php/php7.2-fpm.sock`.
+  The generator cannot expand `php8.2-sock` into a socket path — **the enum values
+  themselves are wrong**, so this is a data fix, not a typing fix.
+- `referrerPolicy` is a bare `string` and upstream emits it as a **`map $uri
+  $ref_policy`** keyed on `wp-admin|wp-login|xmlrpc.php`, not a plain `add_header`.
+  Needs a closed enum.
+- `errorLogLevel` is truncated in `types.ts:147` — typed
+  `debug|info|notice|warn|error`, but `per-website-config/logging-section.tsx:116-123`
+  already renders **9** options including `crit|alert|emerg`. The type is behind its own
+  UI. (Per-site also needs `none`.)
 
 **Enum drift — the generator cannot be written honestly until these are fixed.**
 `referrerPolicy`, `errorLogLevel` (both global and per-site), `sslProfile`, `phpServer`,
@@ -375,35 +428,52 @@ competitive-parity audit (`docs/competitive-options.md`): the flat-vs-nested sto
 moved *ahead* of the generator because the generator reads that bag directly, and
 writing it against the flat shape means writing it twice.
 
-1. **Unbreak the build.** 21 of 34 `tsc` errors are one `src/Components` vs
-   `src/components` casing bug (§7) — that fix is a `git mv`, which is human-run.
-   The remaining 13 are real and ours: 4 in `store/{store,defaults}.ts`, 1 at the
-   `addSite` call site in `per-website-config/index.tsx:70`, 2 `Select` imports +
-   1 implicit `any` in `per-website-config/logging-section.tsx`, 3 `Select` `value`
-   prop errors in `php-section.tsx` / `routing-section.tsx`. Then scope an eslint
-   override for the 11 `react-refresh` errors in generated `ui/` files (correct —
-   they're generated code, do not edit them) and the one `set-state-in-effect` in
-   `hooks/use-mobile.ts`. Nothing else is verifiable until this is green.
-2. **Nest `GlobalConfigState`, fix the enum types and default drift.** Make the global
-   state mirror `Site`'s nested shape (`https: {…}`, `security: {…}`, …) so
-   `updateField` gets dotted paths. Close the enum types (`errorLogLevel`,
-   `referrerPolicy`, `sslProfile`, `phpServer`, `index`, `workerProcesses`,
-   `typesHash*`) and correct the drifted defaults listed in §7. This deletes the 38
-   `as boolean`/`as string` casts as a side effect rather than as a chore.
-3. **Add the missing option surface: Presets, then Setup.** Presets = the nine bundles
+**T2 is DONE and verified** (`61204fe`: `tsc -b` 0, `lint` 0, `build` 0). Nothing
+below is blocked on it any more.
+
+**Next tasks, in order.** Task 1 below was **re-scoped on 2026-10-08** — the old T3
+("nest `GlobalConfigState`, which deletes the 38 casts and gives the generator dotted
+paths") was measured and found to rest on two false premises. See §7 and decision
+A-D11.
+
+1. **Delete the 38 redundant casts and close the enums that actually block the
+   generator.** The 38 `as boolean`/`as string` casts in the 9 `global-config` sections
+   are pure noise — they cast selectors whose fields are already correctly typed.
+   **Delete them; do not nest anything to remove them.** Then fix the three enums the
+   generator genuinely cannot expand: `phpServer` (fake keys → real `fastcgi_pass`
+   socket paths), `referrerPolicy` (bare `string` → closed enum, and note upstream
+   emits it as a `map $uri` block, not an `add_header`), `errorLogLevel` (type is
+   truncated to 5 levels while its own UI already offers 9). Plus the default drift in
+   §7. **Do NOT nest `GlobalConfigState`** — that is deferred (A-D11); it would touch
+   189 `updateField` call sites to buy symmetry the generator does not need.
+2. **Add the missing option surface: Presets, then Setup.** Presets = the nine bundles
    in `docs/competitive-options.md` §3.2, in a **collapsible panel above the per-site
    tabs** per A-D10, with the tab-strip variant kept as a static sample under `docs/`.
    Setup = Download (zip + base64), SSL, Certbot, Go live — SRS §3.4's "Go Live
    Checklist", which is also where `CodeConfigPage`'s dead Format/Save buttons belong.
-4. **Generate nginx files from the form store** (T6). One pure function,
+   Note: presets will be the second caller of `addSite`, which is the trigger for
+   fixing its shallow-`Partial` signature (§7).
+3. **Generate nginx files from the form store** (T6). One pure function,
    `Site[] + global state → files`, living next to the UIConfig store, with one
    assert-based self-check. **It writes files into the file tree, it does not return one
-   string** — see the A-D9 rules in §5. Only sensible *after* task 2.
-5. **Parser worker, written fresh** (T7). Tokenizer that emits `SEMICOLON`, directive
+   string** — see the A-D9 rules in §5. It reads the (flat, fine) state object directly.
+4. **Parser worker, written fresh** (T7). Tokenizer that emits `SEMICOLON`, directive
    tree, feeding `setParsedConfig` + `setSyntaxErrors`. **It consumes the whole file
    tree**, and its AST is the single input to both the code view and the visualizer
    (A-D9). Then wire `CodeConfigPage` to the store so editing the file and editing the
    form are the same state.
+
+**Answers to questions left open by T2** (ruled by master, 2026-10-08 — recorded in
+`TASKS.md` as A-D11/A-D12):
+
+- **Do not nest `GlobalConfigState`.** Not a generator prerequisite (measured), and not
+  free (189 call sites). Revisit only if a second writer appears that needs dotted paths.
+- **`addSite`'s shallow `Partial<Site>` is fine until presets land.** One call site
+  today, and it works. Presets will be the second caller; that is when it gets fixed.
+- **Leave the native-vs-shadcn `Select` split for now** (A-D12). It is internally
+  consistent per screen. It becomes a real problem the moment a *new* section has to
+  pick one — decide then, and decide once.
+- **Delete `src/App.css`** — dead, zero references. Fold into task 1; it is a deletion.
 
 Milestone 5 (`reactflow`) and Milestone 6 (audit rules) come after the parser exists —
 both need parsed input, and both are currently hardcoded fakes that will have to be
