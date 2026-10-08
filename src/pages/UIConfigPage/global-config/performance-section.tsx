@@ -6,27 +6,13 @@ import { useGlobalConfigStore } from "../store";
 
 export function PerformanceSection() {
   const updateField = useGlobalConfigStore((s) => s.updateField);
-  const disableHtmlCaching = useGlobalConfigStore(
-    (s) => s.disableHtmlCaching,
-  ) as boolean;
-  const gzipCompression = useGlobalConfigStore(
-    (s) => s.gzipCompression,
-  ) as boolean;
-  const brotliCompression = useGlobalConfigStore(
-    (s) => s.brotliCompression,
-  ) as boolean;
-  const assetsExpiration = useGlobalConfigStore(
-    (s) => s.assetsExpiration,
-  ) as string;
-  const mediaExpiration = useGlobalConfigStore(
-    (s) => s.mediaExpiration,
-  ) as string;
-  const svgExpiration = useGlobalConfigStore(
-    (s) => s.svgExpiration,
-  ) as string;
-  const fontsExpiration = useGlobalConfigStore(
-    (s) => s.fontsExpiration,
-  ) as string;
+  const disableHtmlCaching = useGlobalConfigStore((s) => s.disableHtmlCaching);
+  const gzipCompression = useGlobalConfigStore((s) => s.gzipCompression);
+  const brotliCompression = useGlobalConfigStore((s) => s.brotliCompression);
+  const assetsExpiration = useGlobalConfigStore((s) => s.assetsExpiration);
+  const mediaExpiration = useGlobalConfigStore((s) => s.mediaExpiration);
+  const svgExpiration = useGlobalConfigStore((s) => s.svgExpiration);
+  const fontsExpiration = useGlobalConfigStore((s) => s.fontsExpiration);
 
   return (
     <div className="mt-6">

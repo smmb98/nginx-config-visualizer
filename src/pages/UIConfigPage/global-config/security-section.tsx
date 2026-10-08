@@ -10,24 +10,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { SectionRow } from "@/components/SectionRow";
 import { useGlobalConfigStore } from "../store";
+import { REFERRER_POLICIES } from "../store/types";
 
 export function SecuritySection() {
   const updateField = useGlobalConfigStore((s) => s.updateField);
-  const referrerPolicy = useGlobalConfigStore(
-    (s) => s.referrerPolicy,
-  ) as string;
+  const referrerPolicy = useGlobalConfigStore((s) => s.referrerPolicy);
   const contentSecurityPolicy = useGlobalConfigStore(
     (s) => s.contentSecurityPolicy,
-  ) as string;
-  const permissionsPolicy = useGlobalConfigStore(
-    (s) => s.permissionsPolicy,
-  ) as string;
-  const serverTokens = useGlobalConfigStore((s) => s.serverTokens) as boolean;
-  const limitReq = useGlobalConfigStore((s) => s.limitReq) as boolean;
-  const securityTxt = useGlobalConfigStore((s) => s.securityTxt) as boolean;
-  const securityTxtPath = useGlobalConfigStore(
-    (s) => s.securityTxtPath,
-  ) as string;
+  );
+  const permissionsPolicy = useGlobalConfigStore((s) => s.permissionsPolicy);
+  const serverTokens = useGlobalConfigStore((s) => s.serverTokens);
+  const limitReq = useGlobalConfigStore((s) => s.limitReq);
+  const securityTxt = useGlobalConfigStore((s) => s.securityTxt);
+  const securityTxtPath = useGlobalConfigStore((s) => s.securityTxtPath);
 
   return (
     <div className="mt-6">
@@ -47,16 +42,7 @@ export function SecuritySection() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[
-                "no-referrer",
-                "no-referrer-when-downgrade",
-                "origin",
-                "origin-when-cross-origin",
-                "same-origin",
-                "strict-origin",
-                "strict-origin-when-cross-origin",
-                "unsafe-url",
-              ].map((v) => (
+              {REFERRER_POLICIES.map((v) => (
                 <SelectItem key={v} value={v}>
                   {v}
                 </SelectItem>

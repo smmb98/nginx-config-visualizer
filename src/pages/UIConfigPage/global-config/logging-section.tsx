@@ -5,36 +5,23 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SectionRow } from "@/components/SectionRow";
 import { useGlobalConfigStore } from "../store";
+import { ERROR_LOG_LEVELS } from "../store/types";
 
 export function LoggingSection() {
   const updateField = useGlobalConfigStore((s) => s.updateField);
-  const errorLogEnabled = useGlobalConfigStore(
-    (s) => s.errorLogEnabled,
-  ) as boolean;
-  const errorLogPath = useGlobalConfigStore(
-    (s) => s.errorLogPath,
-  ) as string;
-  const errorLogLevel = useGlobalConfigStore(
-    (s) => s.errorLogLevel,
-  ) as string;
-  const logNotFound = useGlobalConfigStore((s) => s.logNotFound) as boolean;
-  const cloudflare = useGlobalConfigStore((s) => s.cloudflare) as boolean;
-  const cfRay = useGlobalConfigStore((s) => s.cfRay) as boolean;
-  const cfConnectingIp = useGlobalConfigStore(
-    (s) => s.cfConnectingIp,
-  ) as boolean;
-  const xForwardedFor = useGlobalConfigStore(
-    (s) => s.xForwardedFor,
-  ) as boolean;
-  const xForwardedProto = useGlobalConfigStore(
-    (s) => s.xForwardedProto,
-  ) as boolean;
-  const trueClientIp = useGlobalConfigStore(
-    (s) => s.trueClientIp,
-  ) as boolean;
-  const cfIpCountry = useGlobalConfigStore((s) => s.cfIpCountry) as boolean;
-  const cfVisitor = useGlobalConfigStore((s) => s.cfVisitor) as boolean;
-  const cdnLoop = useGlobalConfigStore((s) => s.cdnLoop) as boolean;
+  const errorLogEnabled = useGlobalConfigStore((s) => s.errorLogEnabled);
+  const errorLogPath = useGlobalConfigStore((s) => s.errorLogPath);
+  const errorLogLevel = useGlobalConfigStore((s) => s.errorLogLevel);
+  const logNotFound = useGlobalConfigStore((s) => s.logNotFound);
+  const cloudflare = useGlobalConfigStore((s) => s.cloudflare);
+  const cfRay = useGlobalConfigStore((s) => s.cfRay);
+  const cfConnectingIp = useGlobalConfigStore((s) => s.cfConnectingIp);
+  const xForwardedFor = useGlobalConfigStore((s) => s.xForwardedFor);
+  const xForwardedProto = useGlobalConfigStore((s) => s.xForwardedProto);
+  const trueClientIp = useGlobalConfigStore((s) => s.trueClientIp);
+  const cfIpCountry = useGlobalConfigStore((s) => s.cfIpCountry);
+  const cfVisitor = useGlobalConfigStore((s) => s.cfVisitor);
+  const cdnLoop = useGlobalConfigStore((s) => s.cdnLoop);
 
   return (
     <div className="mt-6">
@@ -73,7 +60,7 @@ export function LoggingSection() {
             }
             className="flex gap-4"
           >
-            {["debug", "info", "notice", "warn", "error"].map((lvl) => (
+            {ERROR_LOG_LEVELS.map((lvl) => (
               <div key={lvl} className="flex items-center gap-2">
                 <RadioGroupItem value={lvl} id={`err-lvl-${lvl}`} />
                 <Label htmlFor={`err-lvl-${lvl}`} className="text-sm">

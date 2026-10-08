@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { SectionRow } from "@/components/SectionRow";
 import { useGlobalConfigStore } from "../store";
 import type { Site } from "../store/types";
+import { SITE_ERROR_LOG_LEVELS } from "../store/types";
 import { Label } from "@/components/ui/label";
 
 interface LoggingSectionProps {
@@ -113,14 +114,11 @@ export function LoggingSection({ site }: LoggingSectionProps) {
                 onChange={(e) => updateSiteField(site.id, "logging.errorLogLevel", e.target.value)}
                 className="w-[200px] h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
-                <option value="debug">debug</option>
-                <option value="info">info</option>
-                <option value="notice">notice</option>
-                <option value="warn">warn</option>
-                <option value="error">error</option>
-                <option value="crit">crit</option>
-                <option value="alert">alert</option>
-                <option value="emerg">emerg</option>
+                {SITE_ERROR_LOG_LEVELS.map((lvl) => (
+                  <option key={lvl} value={lvl}>
+                    {lvl}
+                  </option>
+                ))}
               </select>
             </SectionRow>
             

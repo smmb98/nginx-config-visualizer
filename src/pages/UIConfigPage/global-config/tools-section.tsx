@@ -12,10 +12,8 @@ export function ToolsSection() {
   );
   const modularizedStructure = useGlobalConfigStore(
     (s) => s.modularizedStructure,
-  ) as boolean;
-  const symlinkVhost = useGlobalConfigStore(
-    (s) => s.symlinkVhost,
-  ) as boolean;
+  );
+  const symlinkVhost = useGlobalConfigStore((s) => s.symlinkVhost);
 
   return (
     <div className="mt-6">

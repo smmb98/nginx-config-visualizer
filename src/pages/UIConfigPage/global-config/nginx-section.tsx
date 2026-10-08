@@ -13,21 +13,13 @@ export function NginxSection() {
   const updateField = useGlobalConfigStore((s) => s.updateField);
   const nginxConfigDirectory = useGlobalConfigStore(
     (s) => s.nginxConfigDirectory,
-  ) as string;
-  const workerProcesses = useGlobalConfigStore(
-    (s) => s.workerProcesses,
-  ) as string;
-  const user = useGlobalConfigStore((s) => s.user) as string;
-  const pid = useGlobalConfigStore((s) => s.pid) as string;
-  const clientMaxBodySize = useGlobalConfigStore(
-    (s) => s.clientMaxBodySize,
-  ) as number;
-  const typesHashMaxSize = useGlobalConfigStore(
-    (s) => s.typesHashMaxSize,
-  ) as number;
-  const typesHashBucketSize = useGlobalConfigStore(
-    (s) => s.typesHashBucketSize,
-  ) as number;
+  );
+  const workerProcesses = useGlobalConfigStore((s) => s.workerProcesses);
+  const user = useGlobalConfigStore((s) => s.user);
+  const pid = useGlobalConfigStore((s) => s.pid);
+  const clientMaxBodySize = useGlobalConfigStore((s) => s.clientMaxBodySize);
+  const typesHashMaxSize = useGlobalConfigStore((s) => s.typesHashMaxSize);
+  const typesHashBucketSize = useGlobalConfigStore((s) => s.typesHashBucketSize);
 
   return (
     <div className="mt-6">

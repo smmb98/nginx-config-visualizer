@@ -44,15 +44,23 @@ export function PhpSection({ site }: PhpSectionProps) {
                 onChange={(e) => updateSiteField(site.id, "php.phpServer", e.target.value)}
                 className="w-[200px] h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
-                <option value="php-fpm.sock">php-fpm.sock</option>
-                <option value="php7.4-sock">php7.4-sock</option>
-                <option value="php8.0-sock">php8.0-sock</option>
-                <option value="php8.1-sock">php8.1-sock</option>
-                <option value="php8.2-sock">php8.2-sock</option>
-                <option value="php8.3-sock">php8.3-sock</option>
+                <option value="unix:/var/run/php/php7.4-fpm.sock">
+                  PHP-FPM 7.4
+                </option>
+                <option value="unix:/var/run/php/php8.0-fpm.sock">
+                  PHP-FPM 8.0
+                </option>
+                <option value="unix:/var/run/php/php8.1-fpm.sock">
+                  PHP-FPM 8.1
+                </option>
+                <option value="unix:/var/run/php/php8.2-fpm.sock">
+                  PHP-FPM 8.2
+                </option>
+                <option value="unix:/var/run/php/php8.3-fpm.sock">
+                  PHP-FPM 8.3
+                </option>
+                <option value="unix:/var/run/hhvm/hhvm.sock">HHVM</option>
                 <option value="custom">Custom</option>
-                <option value="hhvm">HHVM</option>
-                <option value="tcp">TCP</option>
               </select>
             </SectionRow>
             
@@ -79,15 +87,23 @@ export function PhpSection({ site }: PhpSectionProps) {
                 className="w-[200px] h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
                 <option value="">None</option>
-                <option value="php-fpm.sock">php-fpm.sock</option>
-                <option value="php7.4-sock">php7.4-sock</option>
-                <option value="php8.0-sock">php8.0-sock</option>
-                <option value="php8.1-sock">php8.1-sock</option>
-                <option value="php8.2-sock">php8.2-sock</option>
-                <option value="php8.3-sock">php8.3-sock</option>
+                <option value="unix:/var/run/php/php7.4-fpm.sock">
+                  PHP-FPM 7.4
+                </option>
+                <option value="unix:/var/run/php/php8.0-fpm.sock">
+                  PHP-FPM 8.0
+                </option>
+                <option value="unix:/var/run/php/php8.1-fpm.sock">
+                  PHP-FPM 8.1
+                </option>
+                <option value="unix:/var/run/php/php8.2-fpm.sock">
+                  PHP-FPM 8.2
+                </option>
+                <option value="unix:/var/run/php/php8.3-fpm.sock">
+                  PHP-FPM 8.3
+                </option>
+                <option value="unix:/var/run/hhvm/hhvm.sock">HHVM</option>
                 <option value="custom">Custom</option>
-                <option value="hhvm">HHVM</option>
-                <option value="tcp">TCP</option>
               </select>
             </SectionRow>
             

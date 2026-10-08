@@ -1,3 +1,49 @@
+/**
+ * A `fastcgi_pass` target, spelled exactly as nginx will receive it — the generator
+ * interpolates these directly, so a key that is not also the emitted string is a bug.
+ * `custom` is the one sentinel: its socket comes from `phpServerCustom` instead.
+ * `tcp` (a bare host:port) was dropped — `custom` covers it.
+ */
+export type PhpFpmTarget =
+  | "unix:/var/run/php/php7.4-fpm.sock"
+  | "unix:/var/run/php/php8.0-fpm.sock"
+  | "unix:/var/run/php/php8.1-fpm.sock"
+  | "unix:/var/run/php/php8.2-fpm.sock"
+  | "unix:/var/run/php/php8.3-fpm.sock"
+  | "unix:/var/run/hhvm/hhvm.sock"
+  | "custom";
+
+export const ERROR_LOG_LEVELS = [
+  "debug",
+  "info",
+  "notice",
+  "warn",
+  "error",
+  "crit",
+  "alert",
+  "emerg",
+] as const;
+
+export type ErrorLogLevel = (typeof ERROR_LOG_LEVELS)[number];
+
+/** Per-site also accepts `none`, which disables the error log entirely. */
+export const SITE_ERROR_LOG_LEVELS = [...ERROR_LOG_LEVELS, "none"] as const;
+
+export type SiteErrorLogLevel = (typeof SITE_ERROR_LOG_LEVELS)[number];
+
+export const REFERRER_POLICIES = [
+  "no-referrer",
+  "no-referrer-when-downgrade",
+  "origin",
+  "origin-when-cross-origin",
+  "same-origin",
+  "strict-origin",
+  "strict-origin-when-cross-origin",
+  "unsafe-url",
+] as const;
+
+export type ReferrerPolicy = (typeof REFERRER_POLICIES)[number];
+
 export interface SiteServerConfig {
   domain: string;
   path: string;
@@ -25,9 +71,9 @@ export interface SiteHttpsConfig {
 
 export interface SitePhpConfig {
   php: boolean;
-  phpServer: string;
+  phpServer: PhpFpmTarget;
   phpServerCustom: string;
-  phpBackupServer: string;
+  phpBackupServer: PhpFpmTarget | "";
   phpBackupServerCustom: string;
   wordPressRules: boolean;
   drupalRules: boolean;
@@ -63,7 +109,7 @@ export interface SiteLoggingConfig {
   redirectAccessLog: boolean;
   errorLogEnabled: boolean;
   errorLogPath: string;
-  errorLogLevel: string;
+  errorLogLevel: SiteErrorLogLevel;
   redirectErrorLog: boolean;
 }
 
@@ -115,7 +161,7 @@ export interface GlobalConfigState {
   letsEncryptCertRoot: string;
 
   // Security section
-  referrerPolicy: string;
+  referrerPolicy: ReferrerPolicy;
   contentSecurityPolicy: string;
   permissionsPolicy: string;
   serverTokens: boolean;
@@ -144,7 +190,7 @@ export interface GlobalConfigState {
   // Logging section
   errorLogEnabled: boolean;
   errorLogPath: string;
-  errorLogLevel: "debug" | "info" | "notice" | "warn" | "error";
+  errorLogLevel: ErrorLogLevel;
   logNotFound: boolean;
   cloudflare: boolean;
   cfRay: boolean;

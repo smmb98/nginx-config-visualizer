@@ -6,18 +6,12 @@ import { useGlobalConfigStore } from "../store";
 
 export function ReverseProxySection() {
   const updateField = useGlobalConfigStore((s) => s.updateField);
-  const proxyConnectTimeout = useGlobalConfigStore(
-    (s) => s.proxyConnectTimeout,
-  ) as number;
-  const proxySendTimeout = useGlobalConfigStore(
-    (s) => s.proxySendTimeout,
-  ) as number;
-  const proxyReadTimeout = useGlobalConfigStore(
-    (s) => s.proxyReadTimeout,
-  ) as number;
+  const proxyConnectTimeout = useGlobalConfigStore((s) => s.proxyConnectTimeout);
+  const proxySendTimeout = useGlobalConfigStore((s) => s.proxySendTimeout);
+  const proxyReadTimeout = useGlobalConfigStore((s) => s.proxyReadTimeout);
   const proxyCoexistenceXForwarded = useGlobalConfigStore(
     (s) => s.proxyCoexistenceXForwarded,
-  ) as string;
+  );
 
   return (
     <div className="mt-6">

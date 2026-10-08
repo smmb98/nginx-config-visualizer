@@ -1,7 +1,10 @@
 # Instruction — Slave — delete the redundant casts, close the blocking enums
-Status: OPEN
+Status: PARTIAL
 Issued: 2026-10-08
 Supersedes: build hygiene (DONE @ `61204fe`)
+Result: Phases 1, 2 done. Phase 3a + 3c done; **3b blocked** — its two requirements are
+mutually exclusive, see response `## Blockers` #1. Awaiting ruling before touching
+`per-website-config/index.tsx`.
 
 ## Goal
 Make the generator's input honest: delete 38 casts that are pure noise, and fix the

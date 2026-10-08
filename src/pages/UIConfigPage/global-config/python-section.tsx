@@ -4,7 +4,7 @@ import { useGlobalConfigStore } from "../store";
 
 export function PythonSection() {
   const updateField = useGlobalConfigStore((s) => s.updateField);
-  const pythonSocket = useGlobalConfigStore((s) => s.pythonSocket) as string;
+  const pythonSocket = useGlobalConfigStore((s) => s.pythonSocket);
 
   return (
     <div className="mt-6">

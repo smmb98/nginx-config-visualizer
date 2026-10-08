@@ -8,7 +8,7 @@ const DEFAULT_SITE: Site = {
     documentRoot: "/public",
     wwwSubdomain: false,
     cdnSubdomain: false,
-    redirectSubdomains: false,
+    redirectSubdomains: true,
     listenIpv4: "*",
     listenIpv6: "::",
   },
@@ -27,7 +27,7 @@ const DEFAULT_SITE: Site = {
   },
   php: {
     php: false,
-    phpServer: "php-fpm.sock",
+    phpServer: "unix:/var/run/php/php8.2-fpm.sock",
     phpServerCustom: "",
     phpBackupServer: "",
     phpBackupServerCustom: "",
@@ -57,7 +57,7 @@ const DEFAULT_SITE: Site = {
   logging: {
     accessLogEnabled: true,
     accessLogPath: "/var/log/nginx/example.com.access.log",
-    accessLogParameters: 'combined',
+    accessLogParameters: "buffer=512k flush=1m",
     redirectAccessLog: false,
     errorLogEnabled: true,
     errorLogPath: "/var/log/nginx/example.com.error.log",
@@ -120,10 +120,10 @@ export const DEFAULT_STATE: GlobalConfigState = {
   disableHtmlCaching: false,
   gzipCompression: true,
   brotliCompression: false,
-  assetsExpiration: "max",
-  mediaExpiration: "max",
-  svgExpiration: "max",
-  fontsExpiration: "max",
+  assetsExpiration: "7d",
+  mediaExpiration: "7d",
+  svgExpiration: "7d",
+  fontsExpiration: "7d",
 
   // Logging section
   errorLogEnabled: true,
@@ -145,7 +145,7 @@ export const DEFAULT_STATE: GlobalConfigState = {
   workerProcesses: "auto",
   user: "www-data",
   pid: "/run/nginx.pid",
-  clientMaxBodySize: 1,
+  clientMaxBodySize: 16,
   typesHashMaxSize: 2048,
   typesHashBucketSize: 64,
 
@@ -155,8 +155,8 @@ export const DEFAULT_STATE: GlobalConfigState = {
   dockerCompose: false,
 
   // Tools section
-  modularizedStructure: false,
-  symlinkVhost: false,
+  modularizedStructure: true,
+  symlinkVhost: true,
 
   // Sites configuration
   sites: [DEFAULT_SITE],

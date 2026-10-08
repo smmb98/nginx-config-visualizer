@@ -7,13 +7,9 @@ import { useGlobalConfigStore } from "../store";
 
 export function DockerSection() {
   const updateField = useGlobalConfigStore((s) => s.updateField);
-  const dockerTweaks = useGlobalConfigStore(
-    (s) => s.dockerTweaks,
-  ) as boolean;
-  const dockerfile = useGlobalConfigStore((s) => s.dockerfile) as boolean;
-  const dockerCompose = useGlobalConfigStore(
-    (s) => s.dockerCompose,
-  ) as boolean;
+  const dockerTweaks = useGlobalConfigStore((s) => s.dockerTweaks);
+  const dockerfile = useGlobalConfigStore((s) => s.dockerfile);
+  const dockerCompose = useGlobalConfigStore((s) => s.dockerCompose);
 
   return (
     <div className="mt-6">
