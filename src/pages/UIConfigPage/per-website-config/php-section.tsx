@@ -1,6 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { SectionRow } from "@/components/SectionRow";
 import { useGlobalConfigStore } from "../store";
 import type { Site } from "../store/types";
@@ -40,10 +39,10 @@ export function PhpSection({ site }: PhpSectionProps) {
               label="PHP-FPM Server"
               tooltip="PHP-FPM socket or connection method"
             >
-              <Select
+              <select
                 value={php.phpServer}
-                onValueChange={(v) => updateSiteField(site.id, "php.phpServer", v)}
-                className="w-[200px]"
+                onChange={(e) => updateSiteField(site.id, "php.phpServer", e.target.value)}
+                className="w-[200px] h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
                 <option value="php-fpm.sock">php-fpm.sock</option>
                 <option value="php7.4-sock">php7.4-sock</option>
@@ -54,7 +53,7 @@ export function PhpSection({ site }: PhpSectionProps) {
                 <option value="custom">Custom</option>
                 <option value="hhvm">HHVM</option>
                 <option value="tcp">TCP</option>
-              </Select>
+              </select>
             </SectionRow>
             
             {php.phpServer === "custom" && (
@@ -74,10 +73,10 @@ export function PhpSection({ site }: PhpSectionProps) {
               label="Backup PHP-FPM Server"
               tooltip="Backup PHP-FPM socket or connection method"
             >
-              <Select
+              <select
                 value={php.phpBackupServer}
-                onValueChange={(v) => updateSiteField(site.id, "php.phpBackupServer", v)}
-                className="w-[200px]"
+                onChange={(e) => updateSiteField(site.id, "php.phpBackupServer", e.target.value)}
+                className="w-[200px] h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
                 <option value="">None</option>
                 <option value="php-fpm.sock">php-fpm.sock</option>
@@ -89,7 +88,7 @@ export function PhpSection({ site }: PhpSectionProps) {
                 <option value="custom">Custom</option>
                 <option value="hhvm">HHVM</option>
                 <option value="tcp">TCP</option>
-              </Select>
+              </select>
             </SectionRow>
             
             {php.phpBackupServer === "custom" && (

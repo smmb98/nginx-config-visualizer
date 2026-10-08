@@ -1,5 +1,5 @@
 # Instruction — Slave — build hygiene (reissued)
-Status: OPEN
+Status: DONE
 Issued: 2026-10-08
 Supersedes: the earlier "build hygiene" issue, which had a false third phase
 

@@ -19,4 +19,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Generated shadcn primitives — do not hand-edit them to satisfy lint.
+    files: ['src/components/ui/**'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
 ])

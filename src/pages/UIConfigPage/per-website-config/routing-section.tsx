@@ -1,6 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { SectionRow } from "@/components/SectionRow";
 import { useGlobalConfigStore } from "../store";
 import type { Site } from "../store/types";
@@ -40,17 +39,17 @@ export function RoutingSection({ site }: RoutingSectionProps) {
               label="Index File"
               tooltip="Default file to serve when directory is requested"
             >
-              <Select
+              <select
                 value={routing.index}
-                onValueChange={(v) => updateSiteField(site.id, "routing.index", v)}
-                className="w-[200px]"
+                onChange={(e) => updateSiteField(site.id, "routing.index", e.target.value)}
+                className="w-[200px] h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
                 <option value="index.html">index.html</option>
                 <option value="index.php">index.php</option>
                 <option value="index.htm">index.htm</option>
                 <option value="index.asp">index.asp</option>
                 <option value="index.aspx">index.aspx</option>
-              </Select>
+              </select>
             </SectionRow>
             
             <SectionRow

@@ -12,7 +12,11 @@ export function FileTree() {
 
   const toggleDir = (dirId: string) => {
     const current = new Set(expandedDirs);
-    current.has(dirId) ? current.delete(dirId) : current.add(dirId);
+    if (current.has(dirId)) {
+      current.delete(dirId);
+    } else {
+      current.add(dirId);
+    }
     setExpandedDirs(Array.from(current));
   };
 

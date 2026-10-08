@@ -1,8 +1,7 @@
-import type { GlobalConfigState } from "./types";
+import type { GlobalConfigState, Site } from "./types";
 
-const DEFAULT_SITE = {
+const DEFAULT_SITE: Site = {
   id: "site-1",
-  domain: "example.com",
   server: {
     domain: "example.com",
     path: "/var/www/example.com",

@@ -20,19 +20,18 @@ export const useGlobalConfigStore = create<GlobalConfigStore>((set) => ({
 
   addSite: (site) =>
     set((state) => {
+      const seed = DEFAULT_STATE.sites[0];
       const newSite: Site = {
         id: generateSiteId(),
-        server: site?.server ?? DEFAULT_STATE.sites[0].server,
-        https: site?.https ?? DEFAULT_STATE.sites[0].https,
-        php: site?.php ?? DEFAULT_STATE.sites[0].php,
-        python: site?.python ?? DEFAULT_STATE.sites[0].python,
-        reverseProxy: site?.reverseProxy ?? DEFAULT_STATE.sites[0].reverseProxy,
-        routing: site?.routing ?? DEFAULT_STATE.sites[0].routing,
-        logging: site?.logging ?? DEFAULT_STATE.sites[0].logging,
-        restrict: site?.restrict ?? DEFAULT_STATE.sites[0].restrict,
-        onion: site?.onion ?? DEFAULT_STATE.sites[0].onion,
-        // Override domain if provided
-        ...(site?.domain && { server: { ...newSite.server, domain: site.domain } }),
+        server: site?.server ?? seed.server,
+        https: site?.https ?? seed.https,
+        php: site?.php ?? seed.php,
+        python: site?.python ?? seed.python,
+        reverseProxy: site?.reverseProxy ?? seed.reverseProxy,
+        routing: site?.routing ?? seed.routing,
+        logging: site?.logging ?? seed.logging,
+        restrict: site?.restrict ?? seed.restrict,
+        onion: site?.onion ?? seed.onion,
       };
       return { sites: [...state.sites, newSite] };
     }),

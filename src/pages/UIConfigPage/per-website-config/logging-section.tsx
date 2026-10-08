@@ -108,10 +108,10 @@ export function LoggingSection({ site }: LoggingSectionProps) {
               label="Error Log Level"
               tooltip="Minimum severity level to log"
             >
-              <Select
+              <select
                 value={logging.errorLogLevel}
-                onValueChange={(v) => updateSiteField(site.id, "logging.errorLogLevel", v)}
-                className="w-[200px]"
+                onChange={(e) => updateSiteField(site.id, "logging.errorLogLevel", e.target.value)}
+                className="w-[200px] h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
               >
                 <option value="debug">debug</option>
                 <option value="info">info</option>
@@ -121,7 +121,7 @@ export function LoggingSection({ site }: LoggingSectionProps) {
                 <option value="crit">crit</option>
                 <option value="alert">alert</option>
                 <option value="emerg">emerg</option>
-              </Select>
+              </select>
             </SectionRow>
             
             <SectionRow

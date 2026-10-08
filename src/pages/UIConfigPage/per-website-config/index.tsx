@@ -9,7 +9,7 @@ import { RoutingSection } from "./routing-section";
 import { LoggingSection } from "./logging-section";
 import { RestrictSection } from "./restrict-section";
 import { OnionSection } from "./onion-section";
-import { useGlobalConfigStore } from "../store";
+import { useGlobalConfigStore, DEFAULT_STATE } from "../store";
 
 const SITE_SECTIONS = [
   { key: "server", label: "Server" },
@@ -67,7 +67,7 @@ export function PerWebsiteConfigSection() {
 
   const handleAddSite = useCallback(() => {
     const newDomain = getNextDomain(sites, "example.com");
-    addSite({ domain: newDomain });
+    addSite({ server: { ...DEFAULT_STATE.sites[0].server, domain: newDomain } });
   }, [sites, addSite, getNextDomain]);
 
   const handleTabChange = useCallback((newTab: string) => {
