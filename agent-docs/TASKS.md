@@ -288,7 +288,9 @@ complete — the gaps are Presets, Setup, and the NPM-only entities.
 **I10 was a false alarm and its removal changed the work.** A previous instruction
 carried a phase to "fix mojibake in `src/index.css`, `src/store/useAppStore.ts`,
 `src/Components/Workspace.tsx`". Measured on 2026-10-08: the repository contains
-**zero U+FFFD replacement characters**. The `��` seen in terminal output is the console
+**zero U+FFFD replacement characters** (this file is the sole place one used to appear,
+in the very sentence describing them — now written as an escape). The `??` seen in
+terminal output is the console
 failing to render `─` (U+2500) and `→` (U+2192), which are legitimate box-drawing and
 arrow characters in comments. `README.md`'s "dYs?" headings are real emoji
 (🚀 🎨 ⚡ 🛤️) rendering as `?` in a non-UTF-8 console, and the file is valid UTF-8. The

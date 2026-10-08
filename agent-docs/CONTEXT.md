@@ -38,7 +38,10 @@ Privacy is the product: nothing leaves the machine. Source of truth for the spec
 - **reactflow 11.11**, **recharts 3.8**, **react-resizable-panels 4.11** — installed,
   used only as mockups (hardcoded SVG / hardcoded numbers).
 - **shadcn/ui** on **radix-ui 1.4** + **@base-ui/react 1.4** — primitives in
-  `src/Components/ui/` (~60 components, generated, largely unused by app screens).
+  `src/components/ui/`: **55** generated files, of which **8 are actually imported**
+  (`button`, `checkbox`, `field`, `input`, `label`, `radio-group`, `select`, `tooltip`)
+  and **47 are unreferenced**. They are the design system — see decision A-D6, do not
+  delete.
 - **lucide-react** for icons, **Geist Variable** + **JetBrains Mono Variable** fonts.
 - **Babel + `reactCompilerPreset`** is wired into `vite.config.ts`.
 
@@ -59,22 +62,25 @@ src/
   App.tsx                   10 lines. isInitialized ? <Workspace/> : <LandingPage/>
   index.css                 ALL design tokens + .glass-panel/.dot-grid/typography utils
   assets/                   hero.png, svgs
-  Components/
+  components/                  lowercase — the casing bug is fixed, see below
     LandingPage.tsx         entry screen: create new / import
     Workspace.tsx           app shell: Header + FileTree + tab content + Footer,
                             resizable left panel (persisted % width)
     Header.tsx              4 tabs (ui/code/visual/analytics), reset button
     Footer.tsx              status strip
     FileTree.tsx            recursive virtual /etc/nginx tree from the store
-    SectionRow.tsx          label + description + control row (form primitive)
-    TabSelector.tsx
-    ui/                     ~60 shadcn primitives (GENERATED — do not hand-edit)
+    SectionRow.tsx          label + description + control row (form primitive).
+                            `grid-cols-4`, control in `col-span-3` — this is what
+                            collapses at phone widths (T15 / issue I24)
+    TabSelector.tsx         `<li onClick>`, NO `role="tab"` — see AGENTS.md
+    ui/                     55 shadcn primitives, 8 imported, 47 unused
+                          (GENERATED — do not hand-edit)
   pages/
     UIConfigPage/           the generator form
-      index.tsx             composes PerWebsite + Global sections
-      global-config/        10 sections: nginx, performance, security, https,
-                            logging, reverse-proxy, docker, python, tools
-      per-website-config/   11 sections: server, https, php, python, routing,
+      index.tsx             renders PerWebsite + Global together (lines 19-20)
+      global-config/        9 sections: https, security, python, reverse-proxy,
+                            performance, logging, nginx, docker, tools
+      per-website-config/   9 sections: server, https, php, python, routing,
                             logging, restrict, reverse-proxy, onion
       store/                types.ts, defaults.ts, store.ts (the generator's state)
     CodeConfigPage.tsx      Monaco editor — HARDCODED default config, local useState
@@ -98,7 +104,9 @@ a one-step case-only rename is a no-op on a case-insensitive filesystem) and pro
 ## 4. Commands (verified, copy-pasteable)
 
 ```bash
-npm run dev       # vite dev server
+npm run dev       # vite dev server (http://localhost:5173/ — this is what the
+                  # browser-verification procedure in AGENTS.md drives)
+npm run start     # alias of dev; both exist in package.json
 npm run build     # tsc -b && vite build   -- GREEN (verified 2026-10-08, exit 0)
 npm run lint      # eslint .               -- GREEN (verified 2026-10-08, exit 0)
 npx tsc -b        # typecheck only         -- GREEN (verified 2026-10-08, exit 0)
@@ -455,92 +463,72 @@ Milestone 2 (`FileTree`, `/etc/nginx` tree, `createNewConfig`, `importFiles`,
 checklist credits. Milestones 3–6 are mockups. Nothing generates nginx text and
 nothing parses it.
 
-**Next tasks, in order.** Tasks 1 and 2 were re-sequenced on 2026-10-08 after the
-competitive-parity audit (`docs/competitive-options.md`): the flat-vs-nested store fix
-moved *ahead* of the generator because the generator reads that bag directly, and
-writing it against the flat shape means writing it twice.
+**T2 is DONE and verified** (`61204fe`: `tsc -b` 0, `lint` 0, `build` 0). **T3 is DONE and
+verified** (`d72d8b2`: `tsc -b` 0, `lint` 0, **0** casts remaining, `App.css` deleted,
+9 defaults corrected, 3 enums closed). Its 3b sub-task — the `getNextDomain` space — was
+**ruled a product decision and moved to T6** (I17). Nothing below is blocked on T2.
 
-**T2 is DONE and verified** (`61204fe`: `tsc -b` 0, `lint` 0, `build` 0). Nothing
-below is blocked on it any more.
+**Next tasks, in order.** Re-sequenced 2026-10-08: the two UI regressions go first, because
+a live Rule 5 failure outranks the feature queue, and one of them was introduced silently
+by the pass that closed the last one.
 
-**T3 is DONE and verified** (`d72d8b2`: `tsc -b` 0, `lint` 0, 0 casts remaining,
-`App.css` deleted, 9 defaults corrected, 3 enums closed). Its 3b sub-task — the
-`getNextDomain` space — was **ruled a product decision and moved to T6**; see I17 in
-`TASKS.md`. One regression it introduced is now the next task.
-
-**Next tasks, in order.**
-
-1. **T14 — fix the `error_log level` RadioGroup regression.** T3 widened the global
-   logging UI from 5 levels to 9 in `className="flex gap-4"` with no `flex-wrap`, inside
-   a `grid-cols-4` `SectionRow` whose control column is `col-span-3`
-   (`global-config/logging-section.tsx:61`). Nine radio+label pairs do not fit that width
-   and will **clip, not wrap**. Needs a browser to verify — master has not seen it
-   rendered. Small, self-contained, and it is a live Rule 5 failure, so it goes first
-   rather than being buried under feature work.
-2. **Add the missing option surface: Presets, then Setup.** Presets = the nine bundles
-   in `docs/competitive-options.md` §3.2, in a **collapsible panel above the per-site
-   tabs** per A-D10, with the tab-strip variant kept as a static sample under `docs/`.
-   Setup = Download (zip + base64), SSL, Certbot, Go live — SRS §3.4's "Go Live
-   Checklist", which is also where `CodeConfigPage`'s dead Format/Save buttons belong.
-   Presets will be the second caller of `addSite`, which is the trigger for fixing its
-   shallow-`Partial` signature (§7, A-D13).
-3. **Generate nginx files from the form store** (T6). One pure function,
+1. **T14 — fix the `error_log level` RadioGroup clipping.** One class (`flex-wrap`) at
+   `global-config/logging-section.tsx:61`. **Measured over CDP, not estimated:** the row's
+   content is a flat **568px** against a `col-span-3` cell, so it overflows below 1024 — at
+   1024 `alert`/`emerg` are clipped, at 768 **four of eight** are. The page itself does not
+   overflow, so the clipped options are **unreachable**, not merely off-screen.
+   `flex-wrap` fixes 768 and 1024 and provably does **not** reach 360/390, where the cell
+   is 32px. Instruction issued and `OPEN`. **It is 8 levels, not 9** — the 9th (`none`) is
+   per-site only.
+2. **T15 — the app shell has no phone layout.** Exposed by declaring the 360px floor
+   (A-D16). At 360px: the left panel is a fixed **200px**, leaving a 156px content panel;
+   minus the glass-panel's `p-6` that is ~108px; `SectionRow`'s `grid-cols-4` then leaves
+   the control **32px** and the label 8px. **All 12** field rows are affected and 4 already
+   clip in sections no task touches. The Header's children total **788px** in a 360px bar.
+   **Carries its own design decision** — does the left panel become a drawer on phones? —
+   which master will not decide alone.
+3. **Add the missing option surface: Presets, then Setup.** Presets = the nine bundles in
+   `docs/competitive-options.md` §3.2, in a **collapsible panel above the per-site tabs**
+   per A-D10, with the tab-strip variant kept as a static sample under `docs/`. Setup =
+   Download (zip + base64), SSL, Certbot, Go live — SRS §3.4's "Go Live Checklist", which
+   is also where `CodeConfigPage`'s dead Format/Save buttons belong. Presets will be the
+   **second caller** of `addSite`, which is the trigger for fixing its shallow-`Partial`
+   signature (A-D13).
+4. **Generate nginx files from the form store** (T6). One pure function,
    `Site[] + global state → files`, living next to the UIConfig store, with one
    assert-based self-check. **It writes files into the file tree, it does not return one
    string** — see the A-D9 rules in §5. It reads the (flat, fine) state object directly.
-   T6 also inherits three things T3 deliberately left: the `getNextDomain` space
-   (I17), write-site enforcement of the closed enums (I21), and the remaining bare
-   `string` fields (I23).
-4. **Parser worker, written fresh** (T7). Tokenizer that emits `SEMICOLON`, directive
-   tree, feeding `setParsedConfig` + `setSyntaxErrors`. **It consumes the whole file
-   tree**, and its AST is the single input to both the code view and the visualizer
-   (A-D9). Then wire `CodeConfigPage` to the store so editing the file and editing the
-   form are the same state.
+   T6 also inherits three things T3 deliberately left: the `getNextDomain` space (I17),
+   write-site enforcement of the closed enums (I21), and the remaining bare `string`
+   fields (I23).
+5. **Parser worker, written fresh** (T7). Tokenizer that emits `SEMICOLON`, directive tree,
+   feeding `setParsedConfig` + `setSyntaxErrors`. **It consumes the whole file tree**, and
+   its AST is the single input to both the code view and the visualizer (A-D9). Then wire
+   `CodeConfigPage` to the store so editing the file and editing the form are the same
+   state.
 
-**Answers to questions left open by T3** (ruled by master, 2026-10-08 — recorded in
-`TASKS.md` as A-D11 through A-D14):
+**Rulings from the T2 and T3 passes** (master, 2026-10-08 — full text in `TASKS.md`):
 
-- **Do not nest `GlobalConfigState`.** Not a generator prerequisite (measured), and not
-  free (189 call sites). Proved empirically: all 44 casts were redundant and are now
-  deleted; nesting would have left every one of them standing. Revisit only if a second
-  writer appears that needs dotted paths.
-- **`getNextDomain`'s space is not stray** — the generator string is the defect. Ruled,
-  verified, and moved to T6 rather than "fixed" into a silent duplicate-domain bug.
-- **The global logging UI widening stays** (6th file, outside the stated scope) — leaving
-  the type at 9 with a 5-item UI would make the type lie in the other direction.
-- **The closed enums are not enforced at the write site.** `updateField`'s value param is
-  `string | number | boolean | unknown` → `unknown`, so `updateField("referrerPolicy",
-  "banana")` compiles. The unions constrain `defaults.ts` (annotated, therefore checked),
-  which is what the generator needs. Write-site enforcement is a mapped type, deferred to
-  T6 (I21).
-2. **Add the missing option surface: Presets, then Setup.** Presets = the nine bundles
-   in `docs/competitive-options.md` §3.2, in a **collapsible panel above the per-site
-   tabs** per A-D10, with the tab-strip variant kept as a static sample under `docs/`.
-   Setup = Download (zip + base64), SSL, Certbot, Go live — SRS §3.4's "Go Live
-   Checklist", which is also where `CodeConfigPage`'s dead Format/Save buttons belong.
-   Note: presets will be the second caller of `addSite`, which is the trigger for
-   fixing its shallow-`Partial` signature (§7).
-3. **Generate nginx files from the form store** (T6). One pure function,
-   `Site[] + global state → files`, living next to the UIConfig store, with one
-   assert-based self-check. **It writes files into the file tree, it does not return one
-   string** — see the A-D9 rules in §5. It reads the (flat, fine) state object directly.
-4. **Parser worker, written fresh** (T7). Tokenizer that emits `SEMICOLON`, directive
-   tree, feeding `setParsedConfig` + `setSyntaxErrors`. **It consumes the whole file
-   tree**, and its AST is the single input to both the code view and the visualizer
-   (A-D9). Then wire `CodeConfigPage` to the store so editing the file and editing the
-   form are the same state.
-
-**Answers to questions left open by T2** (ruled by master, 2026-10-08 — recorded in
-`TASKS.md` as A-D11/A-D12):
-
-- **Do not nest `GlobalConfigState`.** Not a generator prerequisite (measured), and not
-  free (189 call sites). Revisit only if a second writer appears that needs dotted paths.
-- **`addSite`'s shallow `Partial<Site>` is fine until presets land.** One call site
-  today, and it works. Presets will be the second caller; that is when it gets fixed.
-- **Leave the native-vs-shadcn `Select` split for now** (A-D12). It is internally
-  consistent per screen. It becomes a real problem the moment a *new* section has to
-  pick one — decide then, and decide once.
-- **Delete `src/App.css`** — dead, zero references. Fold into task 1; it is a deletion.
+- **Do not nest `GlobalConfigState`** (A-D11). Not a generator prerequisite (measured),
+  and not free (189 `updateField` call sites). Proved empirically: all **44** casts were
+  redundant and are now deleted; nesting would have left every one standing. Revisit only
+  if a second writer of individual global fields appears.
+- **`getNextDomain`'s space is not stray** (I17) — the *generator string* is the defect.
+  Ruled and verified, rather than "fixed" into a silent duplicate-domain bug.
+- **The global logging UI widening stays** (A-D14). Leaving the type at 8 with a 5-item UI
+  would make the type lie in the other direction. Only the *layout* is wrong.
+- **The closed enums are not enforced at the write site** (I21). `updateField`'s value param
+  is `string | number | boolean | unknown` → `unknown`, so `updateField("referrerPolicy",
+  "banana")` compiles. The unions constrain `defaults.ts`, which is annotated and therefore
+  checked, and that is what the generator reads. Write-site enforcement is a mapped type,
+  deferred to T6.
+- **`addSite`'s shallow `Partial<Site>` is fine until presets land** (A-D13). One call site
+  today and it works; presets are the second caller, and that is when the signature gets
+  settled — with a real caller in hand.
+- **Leave the native-vs-shadcn `Select` split** (A-D12). It is consistent within each
+  screen, so unifying costs five files for no felt gain. Decide once, when the next section
+  is written and matching costs one.
+- **`src/App.css` deleted** — dead, zero references. Done in T3.
 
 Milestone 5 (`reactflow`) and Milestone 6 (audit rules) come after the parser exists —
 both need parsed input, and both are currently hardcoded fakes that will have to be

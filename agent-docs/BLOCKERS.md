@@ -1,8 +1,8 @@
 # BLOCKERS.md — open questions awaiting a decision
 
-Nothing proceeds past an unanswered blocker. A slave writes the question in its own
-response file (`responses/slave-N.md`); the master answers in the same file under
-`## Answer` and sets the instruction's `Status: ANSWERED`.
+Nothing proceeds past an unanswered blocker. A slave writes the question in its one
+response file (`responses/slave.md` — there is only one, never `slave-N.md`); the master
+answers in the same file under `## Answer` and sets the instruction's `Status: ANSWERED`.
 
 As role **A** these get asked in the chat instead. Either way, they are not guessed.
 
@@ -99,6 +99,25 @@ live. Two scope questions:
    will reference files the generator does not produce.
 
 **Blocks T5. Does not block T2, T3 or T4.**
+
+### B11 — Does the Workspace left panel become a drawer on phones? **OPEN — blocks T15**
+**Question (raised by master, 2026-10-08):** the smallest supported width is now defined
+as a standard small smartphone, 360px (A-D16). Measured at that width, the shell has no
+phone layout at all: the left `FileTree` panel is a fixed **200px**, leaving a 156px
+content panel; minus the glass-panel's `p-6` that is ~108px; `SectionRow`'s `grid-cols-4`
+then leaves every control **32px** wide with an 8px label. **All 12** field rows are
+affected and 4 already clip. The Header's children total **788px** in a 360px bar.
+
+**The decision:** at phone widths, does the left panel become an overlay/drawer (toggled
+by a button, overlaying the content), or does it collapse to a thin icon rail, or does the
+whole shell switch to a stacked single-column layout? These are three different products
+and the choice is visual, so it is the human's — measurement cannot settle it.
+
+**Why it is a blocker and not a detail:** T15 cannot be specified until it is answered,
+and the answer determines which components change (`Workspace.tsx`, `Header.tsx`,
+`SectionRow.tsx` all behave differently in each option).
+
+**Does not block T14**, which is a one-class fix at ≥768px and is issued.
 
 ### B3 — Parser: Web Worker or main thread?
 `main`'s abandoned attempt used a Worker. For configs up to 2000 lines (SRS
@@ -267,7 +286,7 @@ mojibake in 3 files" where em-dashes and arrows were meant.
 **Decision:** the phase is removed. Measured 2026-10-08 across the whole repository:
 **zero U+FFFD replacement characters.** `src/index.css` and
 `src/Components/Workspace.tsx` contain `─` (U+2500 box-drawing) and `→` (U+2192) —
-legitimate characters in comments that render as `��` in a non-UTF-8 console.
+legitimate characters in comments that render as `??` in a non-UTF-8 console.
 `README.md` is valid UTF-8 and its `dYs?` headings are real emoji (🚀 🎨 ⚡ 🛤️) that the
 console shows as `?`.
 
