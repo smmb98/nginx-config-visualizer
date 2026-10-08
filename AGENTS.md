@@ -20,6 +20,21 @@ progress: `PLAN.md` / `CHECKLIST.md`. This file governs **how** work gets done.
    Mark deliberate corners with `# ponytail: <ceiling> — upgrade when <condition>`.
    Non-trivial logic leaves one runnable check behind (a test or an assert-based
    `main`/`demo` self-check). Trivial one-liners need none.
+5. **Clean, breathable UI/UX.** Every visible change is held to the standard in
+   `docs/` and the existing app: hierarchy over decoration, no wall of text, generous
+   spacing, consistent tokens (reuse the existing theme/spacing/color vars — do not
+   introduce a parallel set), states for loading/empty/error, keyboard reachable,
+   accessible labels, responsive down to the smallest supported width. New UI must
+   look like it belongs to the same product as the existing screens. Reference mockups
+   in `docs/*/code.html` are the visual baseline — read the nearest one before
+   touching UI.
+6. **Self-review before finalizing.** No change is reported `DONE` until you have
+   actually looked at it: run lint + typecheck + tests, then re-read the diff and check
+   (a) does it break existing behavior, (b) does it render correctly at the target
+   widths, (c) does the empty/loading/error path exist, (d) is anything dead, duplicated
+   or now-redundant (delete it). Report what you checked and what you found — "looks
+   fine" is not a verification. Anything still wrong goes in `## New issues / edge
+   cases` rather than being silently left.
 
 ## Folder of Record: `agent-docs/`
 
@@ -141,8 +156,9 @@ Executes one instruction, then reports. Nothing else.
    your response file, set nothing else in motion, exit. Do not guess.
 5. Otherwise implement the smallest correct change. Run the project's lint/typecheck/test
    commands (from `CONTEXT.md`) and report the result verbatim.
-6. Write your response file `agent-docs/responses/slave-N.md`, template below.
-7. Change the instruction's `Status:` to `DONE` or `BLOCKER`. Never delete the
+6. Run the Absolute Rule 6 self-review pass before writing `DONE`.
+7. Write your response file `agent-docs/responses/slave-N.md`, template below.
+8. Change the instruction's `Status:` to `DONE` or `BLOCKER`. Never delete the
    instruction — it is the audit trail.
 
 Response template:
@@ -158,6 +174,13 @@ Date: <date>
 
 ## Verification
 <exact commands run + their output summary>
+
+## Self-review (Absolute Rule 6)
+- Broke existing behavior? <what you re-checked and found>
+- Renders correctly at target widths? <findings>
+- Empty/loading/error path present? <findings>
+- Dead/duplicated/redundant code found: <what, or "none">
+- UI/UX standard held (Rule 5)? <findings>
 
 ## Ponytail audit
 - Skipped: <what> — add when <condition>
@@ -196,6 +219,7 @@ Per session:
 3. **Ask before implementing.** State the plan, ask for go-ahead, and wait. Never start
    editing on an inferred yes, silence, or an ambiguous reply.
 4. After go-ahead: implement the smallest correct change, run lint/typecheck/test.
+5. Run the Absolute Rule 6 self-review pass before writing `DONE`.
 5. Report to `agent-docs/responses/agent.md` (its own slot — never a slave slot):
 
 ```md
@@ -215,6 +239,13 @@ Status: DONE | BLOCKER | AWAITING-GO
 ## Verification
 <commands + output summary>
 
+## Self-review (Absolute Rule 6)
+- Broke existing behavior? <what you re-checked and found>
+- Renders correctly at target widths? <findings>
+- Empty/loading/error path present? <findings>
+- Dead/duplicated/redundant code found: <what, or "none">
+- UI/UX standard held (Rule 5)? <findings>
+
 ## Ponytail audit
 - Skipped: <what> — add when <condition>
 - CONTEXT.md updates needed: <what>
@@ -232,6 +263,8 @@ Status: DONE | BLOCKER | AWAITING-GO
 6. Keep `agent-docs/CONTEXT.md` current. Every session that changes the app leaves the
    file more accurate than it found it. A session that can't reconstruct the app from
    `CONTEXT.md` alone has failed its main duty.
+7. Log the session: decisions into `TASKS.md` `## DECISIONS`, issues into `## ISSUES
+   FIXED` / `## ISSUES OPEN`, open questions into `BLOCKERS.md`.
 
 ---
 
