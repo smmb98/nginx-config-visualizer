@@ -1,56 +1,92 @@
+export interface SiteServerConfig {
+  domain: string;
+  path: string;
+  documentRoot: string;
+  wwwSubdomain: boolean;
+  cdnSubdomain: boolean;
+  redirectSubdomains: boolean;
+  listenIpv4: string;
+  listenIpv6: string;
+}
+
 export interface SiteHttpsConfig {
-  certType: "none" | "self-signed" | "letsencrypt";
+  https: boolean;
   http2: boolean;
+  http3: boolean;
   forceHttps: boolean;
-  wwwRedirect: boolean;
   hsts: boolean;
+  hstsSubdomains: boolean;
+  hstsPreload: boolean;
+  certType: 'letsEncrypt' | 'custom';
+  letsEncryptEmail: string;
+  sslCertificate: string;
+  sslCertificateKey: string;
 }
 
 export interface SitePhpConfig {
-  enabled: boolean;
-  wordpress: boolean;
-  drupal: boolean;
-  magento: boolean;
-  joomla: boolean;
+  php: boolean;
+  phpServer: string;
+  phpServerCustom: string;
+  phpBackupServer: string;
+  phpBackupServerCustom: string;
+  wordPressRules: boolean;
+  drupalRules: boolean;
+  magentoRules: boolean;
+  joomlaRules: boolean;
 }
 
 export interface SitePythonConfig {
-  django: boolean;
-  gunicornSocket: string;
+  python: boolean;
+  djangoRules: boolean;
 }
 
 export interface SiteReverseProxyConfig {
+  reverseProxy: boolean;
+  path: string;
   proxyPass: string;
-  websockets: boolean;
-  xForwardedProto: boolean;
-  xForwardedHost: boolean;
+  proxyHostHeader: string;
 }
 
 export interface SiteRoutingConfig {
-  fallbackRoute: string;
+  root: boolean;
+  index: string;
+  fallbackHtml: boolean;
+  fallbackPhp: boolean;
+  fallbackPhpPath: string;
+  legacyPhpRouting: boolean;
 }
 
 export interface SiteLoggingConfig {
+  accessLogEnabled: boolean;
   accessLogPath: string;
+  accessLogParameters: string;
+  redirectAccessLog: boolean;
+  errorLogEnabled: boolean;
   errorLogPath: string;
+  errorLogLevel: string;
+  redirectErrorLog: boolean;
 }
 
 export interface SiteRestrictConfig {
-  allowList: string;
-  denyList: string;
-  basicAuth: boolean;
+  getMethod: boolean;
+  postMethod: boolean;
+  putMethod: boolean;
+  patchMethod: boolean;
+  deleteMethod: boolean;
+  headMethod: boolean;
+  connectMethod: boolean;
+  optionsMethod: boolean;
+  traceMethod: boolean;
+  responseCode: number;
 }
 
 export interface SiteOnionConfig {
-  enabled: boolean;
-  location: string;
+  onionLocation: string;
 }
 
 export interface Site {
   id: string;
-  domain: string;
-  root: string;
-  index: string;
+  server: SiteServerConfig;
   https: SiteHttpsConfig;
   php: SitePhpConfig;
   python: SitePythonConfig;

@@ -1,6 +1,4 @@
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { SectionRow } from "@/components/SectionRow";
 import { useGlobalConfigStore } from "../store";
 import type { Site } from "../store/types";
@@ -18,32 +16,21 @@ export function OnionSection({ site }: OnionSectionProps) {
       <h3 className="text-title-md mb-4">Onion (Tor) Configuration</h3>
       <div className="space-y-4">
         <SectionRow
-          label="Hidden service"
-          tooltip="Enable Tor hidden service for this site."
+          label="Onion Address"
+          tooltip="The .onion address for this Tor hidden service (e.g., example.onion)"
         >
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id={`onion-enabled-${site.id}`}
-              checked={onion.enabled}
-              onCheckedChange={(v) => updateSiteField(site.id, "onion.enabled", v)}
-            />
-            <Label htmlFor={`onion-enabled-${site.id}`} className="text-sm">
-              Enable Tor hidden service
-            </Label>
-          </div>
+          <Input
+            value={onion.onionLocation}
+            onChange={(e) => updateSiteField(site.id, "onion.onionLocation", e.target.value)}
+            placeholder="youraddress.onion"
+          />
+          {/* Add validation warning if needed */}
+          {onion.onionLocation && !onion.onionLocation.endsWith(".onion") && (
+            <p className="text-xs text-red-500 mt-1">
+              Warning: Onion addresses should end with .onion
+            </p>
+          )}
         </SectionRow>
-        {onion.enabled && (
-          <SectionRow
-            label="Onion location"
-            tooltip="The .onion address for this site."
-          >
-            <Input
-              value={onion.location}
-              onChange={(e) => updateSiteField(site.id, "onion.location", e.target.value)}
-              placeholder="example.onion"
-            />
-          </SectionRow>
-        )}
       </div>
     </div>
   );
